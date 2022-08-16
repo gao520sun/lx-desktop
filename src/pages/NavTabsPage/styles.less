@@ -1,0 +1,15 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  :global(.ant-tabs-left > .ant-tabs-content-holder, ) {
+    border-left: unset;
+  }
+
+  :global(.ant-tabs-left > .ant-tabs-nav .ant-tabs-ink-bar) {
+    display: none;
+    width: 0;
+    background: red;
+  }
+}
