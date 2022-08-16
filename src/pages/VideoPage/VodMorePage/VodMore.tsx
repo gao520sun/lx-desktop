@@ -57,7 +57,7 @@ const ContentView = styled(FlexRow)`
 let lastScrollTop = 0
 let isDownLoading = false;
 const leftWidth = 110;
-const maxWidth = 172;
+const maxWidth = 210;
 const VodMore = (props:any={}) => {
     const item = props.item || {};
     const dataTypes = dataType(item.type);
@@ -75,9 +75,9 @@ const VodMore = (props:any={}) => {
     })
     
     useEffect(() => {
-        // run({type_id: props.item.type,limit:50});
+        run({type_id: props.item.type,limit:50});
         const doc = document.getElementById('vodList');
-        doc?.addEventListener('scroll',onScrollEvent);
+        // doc?.addEventListener('scroll',onScrollEvent);
         // 监听窗口变化
         window?.ipc?.renderer?.on('win:resized',(data:any) => {
             resize()
@@ -87,15 +87,20 @@ const VodMore = (props:any={}) => {
         }
     },[])
     const resize = () =>{
-        let clientWidth:any = document.getElementById('contentName').clientWidth;
-        let itemWidth = clientWidth / Math.ceil(clientWidth / maxWidth);
-        let items = document.getElementsByClassName('itemName');
-        if(items){
-            for(let i = 0, len = items.length; i < len; i++) {
-                items[i].style.width = (itemWidth - 10) + 'px';
-                items[i].style.height = ((itemWidth - 10)/3 * 4) + 'px';
-              }
+        const dom = document.getElementById('contentName');
+        if(dom){
+            let clientWidth:any = dom.clientWidth;
+            let itemWidth = clientWidth / Math.ceil(clientWidth / maxWidth);
+            let items = document.getElementsByClassName('itemName');
+            let urlImg = document.getElementsByClassName('urlImg');
+            if(items){
+                for(let i = 0, len = items.length; i < len; i++) {
+                    items[i].style.width = (itemWidth - 14) + 'px';
+                    urlImg[i].style.height = ((itemWidth - 14)/3 * 4) + 'px';
+                }
+            }
         }
+        
       }
     const s  = useThrottleFn(() => {
 
@@ -149,9 +154,11 @@ const VodMore = (props:any={}) => {
     return (
         <Con id={'vodList'}>
             {XxTypeView()}
-            <ContentView className='contentName'>
+            <ContentView className='contentName' id={'contentName'}>
                 {list.map((item:any, index:number) => {
-                    return <FlexColumn className='itemName' key={item.vod_id}><ListCell value={item}/></FlexColumn>
+                    return <FlexColumn className='itemName' style={{marginRight:14,marginBottom:10}} key={item.vod_id}>
+                                <ListCell value={item}/>
+                            </FlexColumn>
                 })}
             </ContentView>
         </Con>

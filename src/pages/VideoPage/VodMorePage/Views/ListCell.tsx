@@ -11,13 +11,10 @@ const Con = styled.div`
 `
 const ListCell = (props:any) => {
     const data = props.value;
-    const itemWidth = props.itemWidth;
-    // 最大172 228
-    // 最小 148 196
   return (
     <Con>
-        <FlexImage width={'100%'} height={'100%'} src={httpImgUrl(data.vod_pic)}/>
-        <TextView style={{color:'#fff', fontSize:14}} numberOfLine={1}>{itemWidth}</TextView>
+        <FlexImage className='urlImg' src={httpImgUrl(data.vod_pic)}/>
+        <TextView style={{color:'#fff', fontSize:14, marginTop:6}} numberOfLine={1}>{data.vod_name}</TextView>
     </Con>
   )
 }

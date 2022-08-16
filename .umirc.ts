@@ -19,6 +19,16 @@ export default defineConfig({
       path: '/main',
       component: './NavTabsPage',
     },
+    {
+      name: '详情',
+      path: '/vod/detail/:id',
+      component: './VideoPage/VodDetailPage/VodDetail',
+    },
+    {
+      name: '更多',
+      path: '/vod/more',
+      component: './VideoPage/VodMorePage/VodMore',
+    }
   ],
   npmClient: 'yarn',
   alias: {
