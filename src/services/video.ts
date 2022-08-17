@@ -11,7 +11,6 @@ export const vodSearchList = async (params={}) => {
     return request(host+'/video/vod/search/list',{method:'POST',data:params})
 }
 export const vodSearchMoreList = async (params={}) => {
-    console.log('params::',params)
     return request(host+'/video/vod/search/all/type',{method:'POST',data:params})
 }
 

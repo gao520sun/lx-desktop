@@ -15,7 +15,9 @@ const Con = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin-top: 60px;
+  height: 100%;
+  padding-top: 60px;
+  background-color: #141516;
   overflow-y: scroll;
   &::-webkit-scrollbar{
     background-color: transparent;
@@ -116,7 +118,6 @@ const SearchVod = () => {
   })
   useEffect(() => {
     let token:any = PubSub.subscribe('input:value',(msg,data) => {
-      console.log('搜索值：', data)
       if(!data){return}
       setSearchValue(data)
       run({title:data})
@@ -130,12 +131,8 @@ const SearchVod = () => {
   }
   // 切换页数
   const onPaginationChange = (page:number) => {
-    console.log('page:',page)
     setCurrent(page)
     run({title:searchValue,offset:(current - 1) * 10})
-  }
-  if(loading){
-    return <LoadingView/>
   }
   const renderCell = (item:any) => {
       return (
@@ -172,18 +169,17 @@ const SearchVod = () => {
         </CellBg>
       )
     }
-  console.log('list::',list)
   return (
     <Con>
       <FlexCenter style={{color:'#fff',flexShrink:0,height:200,flexDirection:'column'}}>
         <span style={{fontSize:30,fontWeight:'bold'}}>{searchValue}</span>
         <FlexRow>搜索{searchValue}，找到<div style={{color:THEME.theme}}>{total}</div>个影视作品</FlexRow>
       </FlexCenter>
-      <FlexColumn style={{width:'100%',padding:'0 12px'}}>
+      {!loading ? <FlexColumn style={{width:'100%',padding:'0 12px'}}>
         {list.map((item) =>  {
           return renderCell(item)
         })}
-      </FlexColumn>
+      </FlexColumn> : <LoadingView/>}
       <PaView>
         <Pagination size='small' current={current} pageSize={10} hideOnSinglePage={true} showSizeChanger={false} total={total} style={{padding:12}} onChange={onPaginationChange}/>
       </PaView>

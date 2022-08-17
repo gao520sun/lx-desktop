@@ -1,0 +1,22 @@
+
+
+.movieLeft{
+  position: absolute;
+}
+  .movieLeft-enter {
+    transform: translateX(100%)
+  }
+  
+  .movieLeft-enter-active {
+    transform: translateX(0);
+    transition: transform .45s ease ;;
+  }
+  
+  .movieLeft-exit {
+    transform: translateX(0)
+  }
+  
+  .movieLeft-exit-active {
+    transform: translateX(100%);
+    transition: transform .45s ease-out ;;
+  }

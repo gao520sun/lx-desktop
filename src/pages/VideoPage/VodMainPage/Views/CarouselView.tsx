@@ -10,7 +10,7 @@ const contentStyle: React.CSSProperties = {
     textAlign: 'center',
     background: '#364d79',
   };
-function CarouselView() {
+function CarouselView(props:any) {
     const [height, setHeight] = useState(((1200 - 110) / 16) * 9)
     const [width, setWidth] = useState((1200 - 110))
     useEffect(() => {

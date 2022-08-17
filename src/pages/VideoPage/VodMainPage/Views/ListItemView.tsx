@@ -50,6 +50,7 @@ interface IProps {
   type?:number,
   title?:string,
   data?:any,
+  navigate?:any,
 }
 function ListItemCell(props:{value:IProps}) {
   const onVodItem = useCallback((item:any) => {

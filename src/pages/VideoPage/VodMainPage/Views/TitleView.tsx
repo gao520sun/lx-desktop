@@ -6,13 +6,14 @@ import styled from 'styled-components';
 import PubSub from 'pubsub-js'
 import { Link } from '@umijs/max';
 import { Outlet } from '@umijs/max';
+import { useModel } from '@umijs/max';
 
 function TitleView(props:any) {
   const {title} = props.value;
+  const {navigate} =  useModel('global')
   const dnFn =  useDebounceFn((item:any) => {
-    
-    PubSub.publishSync('vod:more',item);
-  })
+    navigate.push('vodMore',item)
+  },{wait:100})
   const onMoreClick = (item:any) => {
     dnFn.run(item)
   }

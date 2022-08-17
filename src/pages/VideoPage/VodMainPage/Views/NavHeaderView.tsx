@@ -4,7 +4,7 @@ import { ClockCircleOutlined, SearchOutlined } from '@ant-design/icons'
 import { useModel } from '@umijs/max'
 
 import { Input } from 'antd'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 export const HeaderConDiv = styled.div`
   display: flex;
@@ -14,6 +14,7 @@ export const HeaderConDiv = styled.div`
   justify-content: space-between;
   height: 60px;
   top: 0;
+  z-index: 9999;
   left: 109px;
   /* left: 0px; */
   right: 0;
@@ -48,11 +49,39 @@ const InputView = styled(Input)`
   }
 `
 
-const NavHeaderView = (props:{index:number}) => {
+const NavHeaderView = (props:any) => {
+  const {navigate} =  useModel('global')
+  const [forceUpdate,setForceUpdate] = useState(true);
+  const count = typeof navigate?.count  == 'function' &&  navigate?.count() || 0;
   const [searchValue, setSearchValue] = useState('')
-
+  useEffect(() => {
+      let token:any = PubSub.subscribe('nav:push',(msg,data) =>{
+        let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
+        let headerNav:HTMLElement | null = document.getElementById('headerNav');
+        headerSearch ? headerSearch.style.background = '#99999960' : null;
+        headerNav ? headerNav.style.background = '#141516' : null;
+        setForceUpdate(!forceUpdate)
+      });
+      let tokenPop:any = PubSub.subscribe('nav:pop',(msg,data) =>{
+        const doc:any = document.getElementById('vod_list');
+        if(doc?.scrollTop < 100){
+          let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
+          let headerNav:HTMLElement | null = document.getElementById('headerNav');
+          headerNav ? headerNav.style.background='linear-gradient(0deg,#8B8C9310,#21252D45,#21252D80)' : null;
+          headerSearch ? headerSearch.style.background='#00000010' : null;
+        }
+        setForceUpdate(!forceUpdate)
+    });
+    return () => {
+      PubSub.unsubscribe(token)
+      PubSub.unsubscribe(tokenPop)
+    }
+  },[forceUpdate])
   const onFocus = () => {
-    PubSub.publishSync('input:focus');
+    const route = navigate?.routes()[count - 1];
+    if(route?.name != 'searchVod'){
+      navigate.push('searchVod')
+    }
   }
   const onChange = (event:any) => {
     setSearchValue(event.target.value);
@@ -64,7 +93,7 @@ const NavHeaderView = (props:{index:number}) => {
   }
   return (
     <HeaderConDiv id={'headerNav'}>
-      {props.index == 0 ? <div style={{color:THEME.theme,fontSize:16,marginLeft:20}}>凌川视频</div>
+      {count == 1 ? <div style={{color:THEME.theme,fontSize:16,marginLeft:20}}>凌川视频</div>
       :<BackNavView />}
       <Search id={'headerSearch'}>
           <InputView placeholder='搜索' value={searchValue} onKeyDown={onKeyDown} onChange={onChange} onFocus={onFocus}/>

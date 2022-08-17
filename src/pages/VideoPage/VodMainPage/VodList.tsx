@@ -13,6 +13,7 @@ const Con = styled.div`
     display: flex;
     height: 100%;
     width: 100%;
+    background-color: 'red';
     flex-direction: column;
     position: relative;
     overflow:scroll;
@@ -20,7 +21,7 @@ const Con = styled.div`
       display: none;
     }
 `
-function VodList() {
+function VodList(props:any) {
   const { data, error, loading } = useRequest(()=>getVodList({}));
   const scroll = useCallback((event: any) => {
     const scrollTop = event.srcElement.scrollTop;
