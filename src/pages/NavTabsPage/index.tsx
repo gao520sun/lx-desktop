@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Button, Tabs } from 'antd';
 import VodList from '@/pages/VideoPage/VodMainPage/VodList';
-import McList from '@/pages/MusicPge/McList';
+import McList from '@/pages/MusicPge/MicMainPage/McList';
 import NlList from '@/pages/NovelPage/NlList';
 import styles from './styles.less'
 import TopView from './Views/TopView';
