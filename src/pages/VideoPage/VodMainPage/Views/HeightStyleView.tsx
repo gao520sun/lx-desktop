@@ -4,6 +4,7 @@ import { Col, Image } from 'antd';
 import React from 'react'
 import styled from 'styled-components';
 import Linq from 'linq'
+import i01 from '@/assets/01.png'
 const Con = styled.div`
   display:flex;
   position:relative;
@@ -42,7 +43,7 @@ function HeightStyleView({value,width,height}:any) {
   return (
     <Col>
       <Con>
-        <ImgPic width={width || '163px'} height={height || '246px'} preview={false} src={httpImgUrl(value.vod_pic)}/>
+        <ImgPic width={width || '163px'} height={height || '246px'} preview={false}  fallback={i01} src={httpImgUrl(value.vod_pic)}/>
         <InfoAbsoluteDiv >
             <YyDiv/>
             <div style={{flex:1}}/>

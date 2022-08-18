@@ -13,7 +13,6 @@ const Con = styled.div`
     display: flex;
     height: 100%;
     width: 100%;
-    background-color: 'red';
     flex-direction: column;
     position: relative;
     overflow:scroll;

@@ -17,7 +17,6 @@ const NextView:any = styled.div`
   background:linear-gradient(90deg,#00000010,#00000020,#00000060);
   :hover {
     display: flex;
-    color:#ff4757;
   }
 `;
 const LeftView = styled(NextView)`

@@ -37,7 +37,7 @@ const VideoPlayView = (props:any) => {
     }
   },[])
   const storageSaveVod = (data:any) => {
-    const vodHistory = getStoreItem(window.STORE_TYPE.vodHistory) || [];
+    let vodHistory = getStoreItem(window.STORE_TYPE.vodHistory) || [];
     const vodDic = {
       vod_id:props.value.vod_id,
       vod_pic:props.value.vod_pic,
@@ -50,6 +50,7 @@ const VideoPlayView = (props:any) => {
       hisDic = Object.assign(hisDic,vodDic)
     }else {
       vodHistory.unshift(vodDic);
+      vodHistory =  Linq.from(vodHistory).take(100).toArray(); // 只保存前100个
     }
     setStoreItem(window.STORE_TYPE.vodHistory,vodHistory)
   }

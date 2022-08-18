@@ -1,6 +1,7 @@
+import { Image } from 'antd'
 import styled,{ createGlobalStyle } from 'styled-components'
 import TextView from './pages/Components/TextView'
-
+import i01 from '@/assets/01.png';
 export const GlobalStyle = createGlobalStyle`
     flexRow {
         display: flex;
@@ -32,7 +33,10 @@ export const FlexCenter = styled.div`
     align-items: center;
     /* overflow: hidden; */
 `
-export const FlexImage = styled.img`
+export const FlexImage = styled(Image).attrs({
+    preview:false,
+    fallback:i01
+})`
     width: ${(props) => props.width || '100%'};
     height: ${(props) => props.height || '100%'};
     border-radius: 5px;
