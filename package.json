@@ -25,6 +25,7 @@
     "ahooks": "^3.7.0",
     "antd": "^4.20.7",
     "electron-is-dev": "^2.0.0",
+    "electron-store": "^8.1.0",
     "linq": "^4.0.0",
     "lodash": "^4.17.21",
     "pubsub-js": "^1.9.4",

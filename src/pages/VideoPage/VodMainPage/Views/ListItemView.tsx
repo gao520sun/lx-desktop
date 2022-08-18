@@ -2,7 +2,6 @@ import { Col } from 'antd'
 import React, { useCallback, useEffect } from 'react'
 import HeightStyleView from './HeightStyleView'
 import TitleView from './TitleView'
-import styles from './ListStyles.less'
 import styled from 'styled-components';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 const NextView:any = styled.div`
@@ -47,17 +46,14 @@ const Con = styled.div`
 `;
 
 interface IProps {
-  type?:number,
+  type?:any,
   title?:string,
   data?:any,
   navigate?:any,
 }
 function ListItemCell(props:{value:IProps}) {
   const onVodItem = useCallback((item:any) => {
-    window.ipc.renderer.send('vod:detail',item)
-  },[])
-  const onVodMoreTypeItem = useCallback((item:any) => {
-    window.ipc.renderer.send('vod:more',item)
+    window.ipc.renderer.send(window.VOD_TYPE.detail,item)
   },[])
   const onSide = useCallback((type:string) => {
     let conDom:any = document.getElementById('con'+props.value.type) || {};
@@ -70,11 +66,15 @@ function ListItemCell(props:{value:IProps}) {
     }
   },[])
   return (
-    <Col style={{marginTop:10,position:'relative'}}>
+    <Col style={{position:'relative'}}>
       <TitleView value={props.value}/>
       <Con id={'con'+props.value.type}>
         {props.value.data.map((item:any, index:any) => {
-          return <div key={index} style={{marginRight:16}} onClick={() => onVodItem(item)}><HeightStyleView value={item}/></div>
+          const width = props.value.type == 'like' ? '206px' : '163px'
+          const height = props.value.type == 'like' ? '158px' : '246px'
+          return <div key={index} style={{marginRight:16}} onClick={() => onVodItem(item)}>
+            <HeightStyleView width={width} height={height} value={item}/>
+            </div>
         })}
       </Con>
       <LeftView onClick={() => {onSide('left')}}>

@@ -18,7 +18,8 @@ export const HeaderConDiv = styled.div`
   left: 109px;
   /* left: 0px; */
   right: 0;
-  background: linear-gradient(0deg,#8B8C9310,#21252D45,#21252D80);
+  /* background: linear-gradient(0deg,#8B8C9310,#21252D45,#21252D80); */// TODO vod 上下滑动
+  background-color:#141516;
   -webkit-app-region: drag;
 `
 const Search = styled.div`
@@ -26,7 +27,8 @@ const Search = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  background-color: #00000010;
+  /* background-color: #00000010; */ // TODO vod 上下滑动
+  background-color: #99999960;
   width: 230px;
   height: 40px;
   border-radius: 200px;
@@ -56,20 +58,22 @@ const NavHeaderView = (props:any) => {
   const [searchValue, setSearchValue] = useState('')
   useEffect(() => {
       let token:any = PubSub.subscribe('nav:push',(msg,data) =>{
-        let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
-        let headerNav:HTMLElement | null = document.getElementById('headerNav');
-        headerSearch ? headerSearch.style.background = '#99999960' : null;
-        headerNav ? headerNav.style.background = '#141516' : null;
+        // TODO vod 上下滑动
+        // let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
+        // let headerNav:HTMLElement | null = document.getElementById('headerNav');
+        // headerSearch ? headerSearch.style.background = '#99999960' : null;
+        // headerNav ? headerNav.style.background = '#141516' : null;
         setForceUpdate(!forceUpdate)
       });
-      let tokenPop:any = PubSub.subscribe('nav:pop',(msg,data) =>{
-        const doc:any = document.getElementById('vod_list');
-        if(doc?.scrollTop < 100){
-          let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
-          let headerNav:HTMLElement | null = document.getElementById('headerNav');
-          headerNav ? headerNav.style.background='linear-gradient(0deg,#8B8C9310,#21252D45,#21252D80)' : null;
-          headerSearch ? headerSearch.style.background='#00000010' : null;
-        }
+        let tokenPop:any = PubSub.subscribe('nav:pop',(msg,data) =>{
+          // TODO vod 上下滑动
+        // const doc:any = document.getElementById('vod_list');
+        // if(doc?.scrollTop < 100){
+        //   let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
+        //   let headerNav:HTMLElement | null = document.getElementById('headerNav');
+        //   headerNav ? headerNav.style.background='linear-gradient(0deg,#8B8C9310,#21252D45,#21252D80)' : null;
+        //   headerSearch ? headerSearch.style.background='#00000010' : null;
+        // }
         setForceUpdate(!forceUpdate)
     });
     return () => {
@@ -81,6 +85,12 @@ const NavHeaderView = (props:any) => {
     const route = navigate?.routes()[count - 1];
     if(route?.name != 'searchVod'){
       navigate.push('searchVod')
+    }
+  }
+  const onHistoryClick = () => {
+    const route = navigate?.routes()[count - 1];
+    if(route?.name != 'vodHistory'){
+      navigate.push('vodHistory')
     }
   }
   const onChange = (event:any) => {
@@ -99,7 +109,7 @@ const NavHeaderView = (props:any) => {
           <InputView placeholder='搜索' value={searchValue} onKeyDown={onKeyDown} onChange={onChange} onFocus={onFocus}/>
           <SearchOutlined style={{fontSize:16,color:THEME.white,marginRight:-10}}/>
       </Search>
-      <div style={{marginRight:40}}>
+      <div style={{marginRight:40}} onClick={onHistoryClick}>
         <ClockCircleOutlined style={{fontSize:16,color:THEME.white}}/>
       </div>
     </HeaderConDiv>

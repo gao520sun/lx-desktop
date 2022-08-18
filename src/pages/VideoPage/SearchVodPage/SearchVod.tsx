@@ -4,7 +4,6 @@ import { useRequest } from '@umijs/max'
 import { vodSearchList } from '@/services/video'
 import LoadingView from '@/pages/Components/LoadingView'
 import styled from 'styled-components'
-import { useModel } from '@umijs/max'
 import { FlexCenter, FlexColumn, FlexImage, FlexRow } from '@/globalStyle'
 import TextView from '@/pages/Components/TextView'
 import { httpImgUrl } from '@/utils/VodUrl'
@@ -127,7 +126,7 @@ const SearchVod = () => {
     }
   },[list,searchValue])
   const onPalyClick = (item:any) => {
-    window.ipc.renderer.send('vod:detail',item)
+    window.ipc.renderer.send(window.VOD_TYPE.detail,item)
   }
   // 切换页数
   const onPaginationChange = (page:number) => {

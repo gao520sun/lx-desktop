@@ -1,5 +1,12 @@
+interface IStore {
+  setItem:any,
+  getItem:any,
+  removeItem:any,
+  clear:any,
+}
 export interface IElectronAPI {
-    renderer:any
+    renderer:any,
+    store:IStore
   }
   
   declare global {

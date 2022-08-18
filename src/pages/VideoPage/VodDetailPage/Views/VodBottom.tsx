@@ -101,7 +101,7 @@ const VodBottom = (props:IProps) => {
   })
   const onFullScreen = () => {
     console.log('!isFullScreen::',isFullScreen)
-    PubSub.publishSync('vod:fullScreen',!isFullScreen);
+    PubSub.publishSync(window.VOD_TYPE.fullScreen,!isFullScreen);
     setIsFullScreen(!isFullScreen)
   }
   const content = () => {

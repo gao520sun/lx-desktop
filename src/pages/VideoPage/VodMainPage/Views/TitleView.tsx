@@ -9,7 +9,7 @@ import { Outlet } from '@umijs/max';
 import { useModel } from '@umijs/max';
 
 function TitleView(props:any) {
-  const {title} = props.value;
+  const {title, type} = props.value;
   const {navigate} =  useModel('global')
   const dnFn =  useDebounceFn((item:any) => {
     navigate.push('vodMore',item)
@@ -18,9 +18,9 @@ function TitleView(props:any) {
     dnFn.run(item)
   }
   return (
-    <Row style={{justifyContent:'space-between',padding:'12px 20px'}} onClick={() => onMoreClick(props.value)}>
-      <div style={{color:'#fff',fontSize:18}}>{title}</div>
-      <div style={{color:'#999',fontSize:14,cursor:'pointer'}}>更多{title}<RightOutlined/></div>
+    <Row style={{justifyContent:'space-between',padding:'12px 20px'}}>
+      <div style={{color:'#fff',fontSize:20}}>{title}</div>
+      {type != 'like' ? <div style={{color:'#999',fontSize:14,cursor:'pointer'}}  onClick={() => onMoreClick(props.value)}>更多{title}<RightOutlined/></div> : null}
       <Outlet/>
     </Row>
   )

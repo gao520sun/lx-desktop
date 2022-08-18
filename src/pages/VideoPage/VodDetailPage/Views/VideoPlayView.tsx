@@ -5,6 +5,8 @@ import ReactPlayer from 'react-player'
 import styled from 'styled-components';
 import VodBottom from './VodBottom';
 import PubSub from 'pubsub-js'
+import { clearStore, getStoreItem, setStoreItem } from '@/utils/Storage';
+import Linq from 'linq'
 const LoadingDiv = styled.div`
   display: flex;
   position: absolute;
@@ -26,13 +28,31 @@ const VideoPlayView = (props:any) => {
   const [url, setUrl] = useState('');
   useEffect(() => {
     // 订阅兄弟组件播放集数
-    let token:any = PubSub.subscribe('vod:js',(msg,data) =>{
+    let token:any = PubSub.subscribe(window.VOD_TYPE.js,(msg,data) =>{
       setUrl(data.url)
+      storageSaveVod(data);
     });
     return () => {
-      PubSub.unsubscribe(token)
+      PubSub.unsubscribe(token);
     }
   },[])
+  const storageSaveVod = (data:any) => {
+    const vodHistory = getStoreItem(window.STORE_TYPE.vodHistory) || [];
+    const vodDic = {
+      vod_id:props.value.vod_id,
+      vod_pic:props.value.vod_pic,
+      vod_name:props.value.vod_name,
+      type_id:props.value.type_id,
+      ...data
+      ,time:new Date().getTime()}
+    let hisDic:any =  Linq.from(vodHistory).firstOrDefault((x:any) => x.vod_id == vodDic.vod_id)
+    if(hisDic){
+      hisDic = Object.assign(hisDic,vodDic)
+    }else {
+      vodHistory.unshift(vodDic);
+    }
+    setStoreItem(window.STORE_TYPE.vodHistory,vodHistory)
+  }
   // 视频加载
   const onReady = useCallback((player:ReactPlayer) => {
     setLoading(false)

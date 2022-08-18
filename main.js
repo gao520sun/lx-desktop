@@ -1,5 +1,16 @@
 const {app, BrowserWindow, ipcMain, globalShortcut} = require('electron')
 const isDev = require('electron-is-dev')
+const Store = require('electron-store')
+const option = {
+  name: 'lcConfig', //文件名称,默认 config
+  fileExtension: 'json', //文件后缀,默认json
+  clearInvalidConfig: true // 发生 SyntaxError  则清空配置,
+}
+if(!isDev){
+    option.encryptionKey = 'aes-256-cbc';// 对配置文件进行加密
+}
+const ElectronStore = new Store(option);
+console.log('本地存储路径::',ElectronStore.path)
 let mainWin = null
 let initBrowser = {
     width:1200,
@@ -38,7 +49,7 @@ app.whenReady().then(() => {
     })
 })
 
-// 打开视频新的窗口
+// 打开视频事情详情新的窗口
 ipcMain.on('vod:detail',(e,data) => {
     const vodDetailWin = new BrowserWindow({
         ...initBrowser,
@@ -53,6 +64,9 @@ ipcMain.on('vod:detail',(e,data) => {
     vodDetailWin.webContents.openDevTools()
     vodDetailWin.on('window:min',() => {
         mainWin.minimize()
+    })
+    vodDetailWin.on('window:close',() => {
+        console.log('aaaa')
     })
 })
 ipcMain.on('win:fullScreen',(e,  data) => {
@@ -75,3 +89,20 @@ ipcMain.on('window:max', function () {
 ipcMain.on('window:close', function () {
     mainWin.close();
 })
+
+// 文件存储
+ipcMain.on('store:set', (event, key, val) => {
+    ElectronStore.set(key, val)
+    event.returnValue = ElectronStore.get(key)
+  })
+  ipcMain.on('store:get', (event, key) => {
+    event.returnValue = ElectronStore.get(key)
+  })
+  ipcMain.on('store:remove', (event, key) => {
+    ElectronStore.delete(key)
+    event.returnValue = ElectronStore.get(key)
+  })
+  ipcMain.on('store:clear', event => {
+    ElectronStore.clear()
+    event.returnValue = ''
+  })

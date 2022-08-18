@@ -13,9 +13,8 @@ const VodDetail = () => {
   const {data, error, loading } = useRequest(()=>getVodDetailById({id:params.id}),{})
   useEffect(() => {
     // 订阅兄弟组件播放集数
-    let token:any = PubSub.subscribe('vod:fullScreen',(msg,data) =>{
-      console.log('msg...',msg,data)
-      window?.ipc?.renderer?.send('win:fullScreen',data);
+    let token:any = PubSub.subscribe(window.VOD_TYPE.fullScreen,(msg,data) =>{
+      window?.ipc?.renderer?.send(window.WIN_TYPE.fullScreen,data);
     });
     return () => {
       PubSub.unsubscribe(token)

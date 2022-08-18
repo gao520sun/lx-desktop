@@ -32,16 +32,17 @@ const YyDiv = styled.div`
   border-bottom-right-radius:10px;
 `;
 const ImgPic  = styled(Image)`
-  width:163px;
-  height:246px;
+  width:${props => props.width};
+  height:${props => props.height};
   border-radius: 10px;
+  object-fit: cover;
 `
-function HeightStyleView({value}:any) {
+function HeightStyleView({value,width,height}:any) {
   const desc = Linq.from(value.vod_sub || value.vod_blurb ).where((item,index)=>index<10).toJoinedString('');
   return (
     <Col>
       <Con>
-        <ImgPic preview={false} src={httpImgUrl(value.vod_pic)}/>
+        <ImgPic width={width || '163px'} height={height || '246px'} preview={false} src={httpImgUrl(value.vod_pic)}/>
         <InfoAbsoluteDiv >
             <YyDiv/>
             <div style={{flex:1}}/>

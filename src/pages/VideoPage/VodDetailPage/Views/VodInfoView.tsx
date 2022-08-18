@@ -1,9 +1,11 @@
 import THEME from '@/pages/Config/Theme';
 import { vodMergeData } from '@/utils/VodUrl';
 import { Col, Row, Tabs, Typography } from 'antd';
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components';
+import React, { useCallback, useEffect, useState } from 'react'
+import styled, { useTheme } from 'styled-components';
 import PubSub from 'pubsub-js'
+import { getStoreItem } from '@/utils/Storage';
+import Linq from 'linq'
 const Con =styled.div`
     display: flex;
     flex-direction: column;
@@ -76,20 +78,26 @@ const ContentDiv = styled.div`
 const VodInfoView = (props:any) => {
   const data = props.value;
   const vodUrlData = vodMergeData(data.vod_play_from,data.vod_play_url);
-  const [activeKey,setActiveKey] = useState(vodUrlData[0].from)
+  const [activeKey,setActiveKey] = useState('')
   const [currentPlayValue,setCurrentPlayValue] = useState({from:'',name:'',url:''})
   useEffect(() => {
-    // TODO 这里可以有历史记录，后期再加
-    const jUrlDic = vodUrlData[0].data[0];
-    const jFrom = vodUrlData[0].from;
-    onJsUrl({from:jFrom,...jUrlDic})
+    const vodHistory = getStoreItem(window.STORE_TYPE.vodHistory) || [];
+    let hisDic:any =  Linq.from(vodHistory).firstOrDefault((x:any) => x.vod_id == data.vod_id)
+    if(hisDic){
+      onJsUrl(hisDic)
+    }else {
+      const jUrlDic = vodUrlData[0].data[0];
+      const jFrom = vodUrlData[0].from;
+      onJsUrl({from:jFrom,...jUrlDic})
+    }
   },[])
-  const onChange = (key: string) => {
+  const onTabsChange = (key: string) => {
     setActiveKey(key)
   };
   const onJsUrl = (item:{name:string,url:string,from:string}) => {
     setCurrentPlayValue(item)
-    PubSub.publishSync('vod:js',item); // 发送集数数据
+    onTabsChange(item.from)
+    PubSub.publishSync(window.VOD_TYPE.js,item); // 发送集数数据
   }
   const tabItemName = (name:string,key:string) => {
     return (
@@ -98,39 +106,40 @@ const VodInfoView = (props:any) => {
       </TabItem>
     )
   }
-  const contentView = (value:any) => {
+  const contentView = useCallback((value:any) => {
+    const {name,from,url} = currentPlayValue;
     return (
       <ContentDiv>
-        {value.data.map((item:{name:string,url:string}) => {
-          const {name,from} = currentPlayValue;
-          const color = value.from == from && name == item.name ? THEME.theme : '#fff'
+        {value.data.map((itemData:any) => {// {name:string,url:string}
+          const item = {...itemData}
+          const color = value.from == from && name == item.name ? THEME.theme : '#fff';
           return (
-            <ConItem key={item.url} style={{color:color}} onClick={() => onJsUrl({...item,from:value.from})}>{item.name}</ConItem>
+            <ConItem key={item.url} style={{color:color}} onClick={() => onJsUrl({name:item.name,url:item.url,from:value.from})}>{item.name}</ConItem>
           )
         })}
       </ContentDiv>
     )
-  }
+  },[currentPlayValue,activeKey])
   return (
     <Con>
         <Row style={{alignItems:'baseline',margin:12}}>
           <Title>{data.vod_name}</Title>
           <Desc>{data.vod_remarks}</Desc>
         </Row>
-        <Col style={{alignItems:'baseline',margin:12}}>
+        <Col style={{alignItems:'baseline',margin:12,flexShrink:0}}>
           <Typography.Paragraph style={{color:'#fff',fontSize:12}}  ellipsis={{ rows: 2, expandable: true, symbol: '更多' }}>{data.vod_content}</Typography.Paragraph>
         </Col>
         <ColDiv>
-          <Tabs tabBarStyle={{padding:'0 12px',height:40}} activeKey={activeKey} moreIcon={null} onChange={onChange}>
+          <Tabs activeKey={activeKey} tabBarStyle={{padding:'0 12px',height:40}} moreIcon={null} onChange={onTabsChange}>
             {vodUrlData.map((item:any) => {
-              return (
-                <Tabs.TabPane style={{display:'flex',maxHeight:'100%'}} tab={tabItemName(item.from,item.from)} key={item.from}>
-                  <div style={{display:'flex',maxHeight:'100%'}}>
-                    {contentView(item)}
-                  </div>
-                </Tabs.TabPane>
-              )
-            })}
+                return (
+                  <Tabs.TabPane  tab={tabItemName(item.from,item.from)} key={item.from} >
+                    <div style={{display:'flex',maxHeight:'100%'}}>
+                      {contentView(item)}
+                    </div>
+                  </Tabs.TabPane>
+                )
+              })}
           </Tabs>
         </ColDiv>
     </Con>

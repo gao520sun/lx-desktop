@@ -1,11 +1,12 @@
 import { FlexColumn, FlexRow } from '@/globalStyle'
 import ErrorView from '@/pages/Components/ErrorView';
+import LoadingFooterView from '@/pages/Components/LoadingFooterView';
 import LoadingView from '@/pages/Components/LoadingView';
 import THEME from '@/pages/Config/Theme'
 import { vodSearchMoreList } from '@/services/video';
 import { useRequest } from '@umijs/max';
 import { useDebounceFn, useThrottleFn } from 'ahooks';
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import ListCell from './Views/ListCell';
 import {dataType, initSelectData} from './VodModal';
@@ -57,34 +58,40 @@ const ContentView = styled(FlexRow)`
     flex-wrap: wrap;
     margin-left: 20px;
 `
-let lastScrollTop = 0
 let isDownLoading = false;
-const leftWidth = 110;
+let hasMore = true;
 const maxWidth = 210;
+const limit = 50
 const VodMore = (props:any={}) => {
     const item = props.params || {};
     const dataTypes = dataType(item.type);
     const [currentTypes,setCurrentTypes] = useState<any>(initSelectData)
-    // 上拉刷新
-    const [isLoadingMore, setIsLoadingMore] = useState(true);
     const [list, setList] = useState([]);
     const {run, loading} = useRequest(vodSearchMoreList,{
         manual:true,
         defaultParams:[{}],
-        onSuccess:(res) => {
-            setList(res.list)
+        onSuccess:(res:any,params:any) => {
+            const par = params[0]
+            let oldList:any = par.offset == 0 ? [] : [...list];
+            const newList:any = oldList.concat(res.list||[]);
+            hasMore = res.list.length >= limit ? true : false;
+            isDownLoading = false;
+            setList(newList);
             setTimeout(() => {
                 resize()
-            }, 100);
+            }, 0);
         }
     })
     
     useEffect(() => {
-        run({type_id: item.type,limit:50});
+         isDownLoading = false;
+         hasMore = true;
+        run({type_id: item.type,limit:limit,offset:0,...currentTypeHandle(currentTypes)});
+        // 上下滑动
         const doc = document.getElementById('vodList');
-        // doc?.addEventListener('scroll',onScrollEvent);
+        doc?.addEventListener('scroll',onScrollEvent);
         // 监听窗口变化
-        window?.ipc?.renderer?.on('win:resized',(data:any) => {
+        window?.ipc?.renderer?.on(window.WIN_TYPE.resized,(data:any) => {
             resize()
         })
         return ()  => {
@@ -106,42 +113,49 @@ const VodMore = (props:any={}) => {
             }
         }
         
-      }
+    }
+    // 节流上拉加载
     const onScrollEvent = (e:any) => {
-        const loadHeight = 35;
+        console.log('hasMore::',isDownLoading)
+        const loadHeight = 65;
         let scrollTop = 0,scrollHeight=0,clientHeight=0
-        // scrollTop = (e.srcElement ? e.srcElement?.documentElement?.scrollTop : false)|| window.pageYOffset|| (e.srcElement ? e.srcElement?.body?.scrollTop : 0);
-        // scrollHeight = e.srcElement?.documentElement?.scrollHeight;
-        // clientHeight = e.srcElement?.documentElement?.clientHeight;
         scrollTop = e.target?.scrollTop;
         scrollHeight = e.target?.scrollHeight;
         clientHeight = e.target?.clientHeight;
-        console.log('scrollTop..',scrollTop,scrollHeight,clientHeight)
         if(scrollTop + clientHeight > scrollHeight - loadHeight){
-            console.log('more')
-            // 这里需要判断 到底了 调用接口 
-            // const pullDown = scrollTop - lastScrollTop > 0;
-            // if (pullDown && !isDownLoading && isLoadingMore) {
-            //   isDownLoading = true;
-            //   console.log('more');
-            // //   loadMoreData();
-            // }
+            if(!isDownLoading && hasMore){
+                isDownLoading = true
+                scrollThrottle.run();
+            }
           }
-        //   lastScrollTop = scrollTop
     }
+    const scrollThrottle = useThrottleFn(() => {
+        onLoadMore();
+    },{wait:500})
+    // 加载更多
+    const onLoadMore = useCallback(() => {
+        run({type_id: item.type,limit:limit,offset:list.length,...currentTypeHandle(currentTypes)});
+    },[list])
+    // 防抖刷选
     const debounceFn  = useDebounceFn((cuType) => {
+        const params  =  {type_id: item.type,limit:limit,offset:0,...currentTypeHandle(cuType)}
+        run(params);
+    },{wait:100})
+    // 
+    const currentTypeHandle = (cuType:any) => {
         const vod_class = cuType[0] == '全部剧情' ? '' : cuType[0];
         const  vod_area = cuType[1] == '全部地区' ? '' : cuType[1];
         const vod_lang = cuType[2] == '全部语言' ? '' : cuType[2];
         const vod_year = cuType[3] == '全部时间' ? '' : cuType[3];
-        const params  =  {type_id: item.type,limit:50,vod_area,vod_class,vod_lang,vod_year}
-        run(params);
-    },{wait:100})
+        return {vod_area,vod_class,vod_lang,vod_year}
+    }
     // 选项
     const onItemClick = (item:any,index:number) => {
         let cuType = [...currentTypes];
         cuType[index] = item;
         setCurrentTypes(cuType);
+        hasMore = true;
+        isDownLoading = false
         debounceFn.run(cuType)
     }
     const XxTypeView = () => {
@@ -166,11 +180,12 @@ const VodMore = (props:any={}) => {
         <Con id={'vodList'}>
             {XxTypeView()}
             <ContentView className='contentName' id={'contentName'}>
-                {!loading ? list.map((item:any, index:number) => {
+                {!loading || list.length ? list.map((item:any, index:number) => {
                     return <FlexColumn className='itemName' style={{marginRight:14,marginBottom:10}} key={item.vod_id}>
                                 <ListCell value={item}/>
                             </FlexColumn>
                 }):<LoadingView/>}
+                {!loading || list.length ? <LoadingFooterView isMore={hasMore} isLoading={isDownLoading}/> : null}
                 {!loading && !list.length ? <ErrorView msg='暂无数据, 请选择其他类型'/>:null}
             </ContentView>
         </Con>

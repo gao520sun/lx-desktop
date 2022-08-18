@@ -16,8 +16,7 @@ export const dmJq = ['科幻', '热血', '推理', '搞笑', '冒险', '萝莉',
 export const dmArea = ['国产', '日本', '欧美', '其他']
 export const dmLang = ['国语', '英语', '粤语', '闽南语', '韩语', '日语', '其它']
 const allDate = () => {
-    const year = new Date().getFullYear();
-    console.log('year::',year)  
+    const year = new Date().getFullYear(); 
     let years:number[] = [];
     for(let i = 2008; i <= year; i++){
         years.push(i)

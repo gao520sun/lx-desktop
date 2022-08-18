@@ -1,4 +1,5 @@
 import styled,{ createGlobalStyle } from 'styled-components'
+import TextView from './pages/Components/TextView'
 
 export const GlobalStyle = createGlobalStyle`
     flexRow {
@@ -36,4 +37,7 @@ export const FlexImage = styled.img`
     height: ${(props) => props.height || '100%'};
     border-radius: 5px;
 `
-
+export const FlexText =  styled(TextView)`
+    color:#fff;
+    font-size: 14px;
+`
