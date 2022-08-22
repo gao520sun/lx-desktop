@@ -1,15 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Button, Tabs } from 'antd';
 import VodList from '@/pages/VideoPage/VodMainPage/VodList';
-import McList from '@/pages/MusicPge/MicMainPage/McList';
+import McList from '@/pages/MusicPage/MicMainPage/McList';
 import NlList from '@/pages/NovelPage/NlList';
 import styles from './styles.less'
 import TopView from './Views/TopView';
 import BottomView from './Views/BottomView';
 import PubSub from 'pubsub-js'
 import NavHeaderView from '@/pages/VideoPage/VodMainPage/Views/NavHeaderView';
-import NavigationView from './NavigationView';
+import MicNavHeaderView from '@/pages/MusicPage/MicMainPage/Views/MicNavHeaderView';
+import MicToolView from '@/pages/MusicPage/MicMainPage/Views/MicToolView';
+import AudioView from '@/pages/MusicPage/MicMainPage/Views/AudioView';
+import VodNavigationView from './VodNavigationView';
+import MicNavigationView from './MicNavigationView';
 import styled from 'styled-components';
+import { FlexColumn, FlexRow } from '@/globalStyle';
 
 const vodKey = 'vod'
 const micKey = 'mic'
@@ -26,6 +31,9 @@ const ContentDiv:any = styled.div`
   width:100%;
   overflow: hidden;
   background-color: ${(props:any) => props.rightBgColor};
+`
+const MicContentDiv:any = styled(ContentDiv)`
+  flex-direction: row;
 `
 function NavTabsPage() {
   const [activeKey,setActiveKey] = useState(micKey)
@@ -52,16 +60,20 @@ function NavTabsPage() {
     <div className={styles.container}>
       <Tabs defaultActiveKey={activeKey} tabPosition='left' onChange={onChange} tabBarExtraContent={{left:leftView(),right:rightView()}} tabBarStyle={{width:leftWidth,padding:0,background:tabData[activeKey].leftBgColor}}>
             <Tabs.TabPane tab={tabItemName(tabData[vodKey])} key={vodKey}>
-            <NavHeaderView/>
+              <NavHeaderView/>
               <ContentDiv rightBgColor={tabDic.rightBgColor}>
-                <NavigationView/>
+                <VodNavigationView/>
               </ContentDiv>
-                
             </Tabs.TabPane>
             <Tabs.TabPane tab={tabItemName(tabData[micKey])} key={micKey}>
-              <ContentDiv rightBgColor={tabDic.rightBgColor}>
-                <McList/>
-              </ContentDiv> 
+              <MicContentDiv rightBgColor={tabDic.rightBgColor}>
+                <MicToolView/>
+                <FlexColumn style={{position:'relative',width:'100%',height:'100%'}}>
+                  <MicNavHeaderView/>
+                  <MicNavigationView/>
+                  <AudioView/>
+                </FlexColumn> 
+              </MicContentDiv>
             </Tabs.TabPane>
             <Tabs.TabPane tab={tabItemName(tabData[nolKey])} key={nolKey}>
                 <ContentDiv rightBgColor={tabDic.rightBgColor}>

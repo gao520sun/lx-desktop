@@ -15,11 +15,10 @@ export const HeaderConDiv = styled.div`
   height: 60px;
   top: 0;
   z-index: 9999;
-  left: 109px;
-  /* left: 0px; */
+  left: 289px;
   right: 0;
-  /* background: linear-gradient(0deg,#8B8C9310,#21252D45,#21252D80); */// TODO vod 上下滑动
-  background-color:#141516;
+  background-color:#fff;
+  border-bottom: 1px solid #f0f0f0;
   -webkit-app-region: drag;
 `
 const Search = styled.div`
@@ -27,10 +26,9 @@ const Search = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  /* background-color: #00000010; */ // TODO vod 上下滑动
-  background-color: #99999960;
+  background-color: #99999930;
   width: 230px;
-  height: 40px;
+  height: 36px;
   border-radius: 200px;
   padding: 0px 20px;
   position: absolute;
@@ -52,12 +50,12 @@ const InputView = styled(Input)`
 `
 
 const NavHeaderView = (props:any) => {
-  const {navigate} =  useModel('global')
+  const {micNavigate} =  useModel('global')
   const [forceUpdate,setForceUpdate] = useState(true);
-  const count = typeof navigate?.count  == 'function' &&  navigate?.count() || 0;
+  const count = typeof micNavigate?.count  == 'function' &&  micNavigate?.count() || 0;
   const [searchValue, setSearchValue] = useState('')
   useEffect(() => {
-      let token:any = PubSub.subscribe('nav:push',(msg,data) =>{
+      let token:any = PubSub.subscribe('micNav:push',(msg,data) =>{
         // TODO vod 上下滑动
         // let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
         // let headerNav:HTMLElement | null = document.getElementById('headerNav');
@@ -65,7 +63,7 @@ const NavHeaderView = (props:any) => {
         // headerNav ? headerNav.style.background = '#141516' : null;
         setForceUpdate(!forceUpdate)
       });
-        let tokenPop:any = PubSub.subscribe('nav:pop',(msg,data) =>{
+        let tokenPop:any = PubSub.subscribe('micNav:pop',(msg,data) =>{
           // TODO vod 上下滑动
         // const doc:any = document.getElementById('vod_list');
         // if(doc?.scrollTop < 100){
@@ -82,15 +80,15 @@ const NavHeaderView = (props:any) => {
     }
   },[forceUpdate])
   const onFocus = () => {
-    const route = navigate?.routes()[count - 1];
+    const route = micNavigate?.routes()[count - 1];
     if(route?.name != 'searchVod'){
-      navigate.push('searchVod')
+        micNavigate.push('searchVod')
     }
   }
   const onHistoryClick = () => {
-    const route = navigate?.routes()[count - 1];
+    const route = micNavigate?.routes()[count - 1];
     if(route?.name != 'vodHistory'){
-      navigate.push('vodHistory')
+        micNavigate.push('vodHistory')
     }
   }
   const onChange = (event:any) => {
@@ -103,11 +101,11 @@ const NavHeaderView = (props:any) => {
   }
   return (
     <HeaderConDiv id={'headerNav'}>
-      {count == 1 ? <div style={{color:THEME.theme,fontSize:16,marginLeft:20}}>凌川视频</div>
-      :<BackNavView navigate={navigate}/>}
+      {count == 1 ? <div style={{color:THEME.theme,fontSize:16,marginLeft:20}}>凌川音乐</div>
+      :<BackNavView navigate={micNavigate} iconStyle={{color:'#999'}}/>}
       <Search id={'headerSearch'}>
-          <InputView placeholder='搜索' value={searchValue} onKeyDown={onKeyDown} onChange={onChange} onFocus={onFocus}/>
-          <SearchOutlined style={{fontSize:16,color:THEME.white,marginRight:-10}}/>
+          <SearchOutlined style={{fontSize:16,color:'#999',marginRight:10}}/>
+          <InputView placeholder='搜索音乐' value={searchValue} onKeyDown={onKeyDown} onChange={onChange} onFocus={onFocus}/>
       </Search>
       <div style={{marginRight:40}} onClick={onHistoryClick}>
         <ClockCircleOutlined style={{fontSize:16,color:THEME.white}}/>

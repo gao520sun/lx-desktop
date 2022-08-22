@@ -17,6 +17,11 @@ export const GlobalStyle = createGlobalStyle`
        align-items: center;
     }
 `
+export const Flex = styled.div`
+    display: flex;
+    flex:1;
+    /* overflow: hidden; */
+`
 export const FlexRow = styled.div`
     display: flex;
     flex-direction: row;
@@ -41,7 +46,26 @@ export const FlexImage = styled(Image).attrs({
     height: ${(props) => props.height || '100%'};
     border-radius: 5px;
 `
-export const FlexText =  styled(TextView)`
-    color:#fff;
-    font-size: 14px;
+export const FlexText:any =  styled(TextView)`
+    color:${(props) => props.color || '#fff'};
+    font-size: ${(props) => props.fontSize || '14px'};
+`
+
+export const FlexWidth:any = styled.div`
+    flex-shrink: 0;
+    width: ${(props:any) => props.width || '10px'};
+`
+export const FlexHeight:any = styled.div`
+    flex-shrink: 0;
+    height: ${(props:any) => props.height || '10px'};
+`
+export const FlexWidth10 = styled(FlexWidth)``
+
+export const FlexWidth12 = styled(FlexWidth)`
+    width: ${(props:any) => props.width || '12px'};
+`
+export const FlexHeight10 = styled(FlexHeight)``
+
+export const FlexHeight12 = styled(FlexHeight)`
+    height: ${(props:any) => props.height || '12px'};
 `

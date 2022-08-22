@@ -5,11 +5,14 @@ import { useState } from 'react';
 const useUser = () => {
   const [name, setName] = useState<string>(DEFAULT_NAME);
   const [navigate, setNavigate] = useState<any>({});
+  const [micNavigate, setMicNavigate] = useState<any>({});
   return {
     name,
     setName,
     navigate,
-    setNavigate
+    setNavigate,
+    micNavigate,
+    setMicNavigate,
   };
 };
 

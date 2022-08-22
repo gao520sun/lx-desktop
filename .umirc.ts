@@ -33,5 +33,19 @@ export default defineConfig({
   npmClient: 'yarn',
   alias: {
     '@': path.resolve(__dirname, '../src'),
-  }
+  },
+  proxy: {
+    '/discover': {
+      'target': 'https://music.163.com',
+      'changeOrigin': true,
+    },
+    '/weapi': {
+      'target': 'https://music.163.com',
+      'changeOrigin': true,
+    },
+    '/eapi': {
+      'target': 'https://interface3.music.163.com',
+      'changeOrigin': true,
+    },
+  },
 });
