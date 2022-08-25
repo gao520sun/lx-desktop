@@ -52,7 +52,6 @@ const PlayBtn = styled(FlexCenter)`
   border-radius:50px;
   background: linear-gradient(90deg, #ff9800, #ff2a14);
   cursor: pointer;
-  
 `
 const JsAbsView = styled(FlexCenter)`
   position: absolute;

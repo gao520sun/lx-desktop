@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import THEME from '@/pages/Config/Theme';
 import { AddCard, Delete, FormatListNumberedRtl } from '@mui/icons-material';
 import { formatTime } from '@/utils/VodDate';
+import PubSub from 'pubsub-js'
 interface IProps {
 }
 const Con = styled.div`
@@ -30,51 +31,66 @@ const CellDiv = styled(FlexRow)`
     flex-shrink: 0;
     border-bottom: 1px solid #f0f0f0;
     align-items: center;
+    &:hover{
+        background-color:#f0f0f0;
+        cursor: pointer;
+    };
 `
 const iconVolStyle = {fontSize:20,color:'#9a9a9a',":hover":{color:THEME.theme}};
 const iconItemStyle = {...iconVolStyle,fontSize:18};
-const PlayerMenuListView = (props:IProps) => {
+const PlayerMenuListView = (props:any) => {
     const [visible, setVisible] = useState(false); // 显示菜单
     const [placement] = useState<DrawerProps['placement']>('right');
     const onClose = () => {
         setVisible(false)
     }
     const onItemCellClick = (item:any) => {
-        console.log('item::',item)
+        PubSub.publishSync(window.MIC_TYPE.oneSongPlay,item)
+    }
+    const onAddSongListClick = () => {
+
+    }
+    const onDeletePlayerListClick = () => {
+        
     }
     const headerView = () => {
         const textStyle = {color:'#333', fontSize:12,lineHeight:'20px'};
         const lineWidth = '6px'
         return (
-            <FlexColumn>
+            <FlexColumn style={{marginTop:60}}>
                 <FlexText style={{fontSize:20,color:'#333'}}>播放列表</FlexText>
                 <FlexHeight10/>
                 <FlexRow style={{alignItems:'center',}}>
-                    <FlexText style={textStyle}>共{1222}首歌曲</FlexText>
+                    <FlexText style={textStyle}>共{props.data?.length || 0}首歌曲</FlexText>
                     <Flex/>
-                    <FlexCenter ><AddCard sx={iconItemStyle}/></FlexCenter>
-                    <FlexWidth width={lineWidth}/>
-                    <FlexText style={textStyle}>收藏全部</FlexText>
-                    <FlexWidth10/>
-                    <FlexCenter><Delete sx={iconItemStyle}/></FlexCenter>
-                    <FlexWidth width={lineWidth}/>
-                    <FlexText style={textStyle}>清空列表</FlexText>
+                    <FlexRow onClick={onAddSongListClick}>
+                        <FlexCenter ><AddCard sx={iconItemStyle}/></FlexCenter>
+                        <FlexWidth width={lineWidth}/>
+                        <FlexText style={textStyle}>添加全部歌单</FlexText>
+                        <FlexWidth10/>
+                    </FlexRow>
+                    <FlexRow onClick={onDeletePlayerListClick}>
+                        <FlexCenter><Delete sx={iconItemStyle}/></FlexCenter>
+                        <FlexWidth width={lineWidth}/>
+                        <FlexText style={textStyle}>清空列表</FlexText>
+                    </FlexRow>
                     <FlexWidth12/>
                 </FlexRow>
             </FlexColumn>
         )
     }
     const itemCellView = (item:any) => {
+        const isSelect = item.id == props.currentData.id;
         return (
-            <CellDiv key={item} onClick={() => onItemCellClick(item)}>
-                <FlexImage style={{width:40,height:40}} src=''/>
+            <CellDiv key={item.id} onClick={() => onItemCellClick(item)}>
+                <FlexImage style={{width:40,height:40}} src={item.album_pic}/>
                 <FlexWidth width='12px'/>
                 <FlexColumn style={{width:'100%'}}>
-                    <FlexText numberOfLine={1} color={'#333'}>回到过去</FlexText>
+                    <FlexText numberOfLine={1} color={isSelect?THEME.theme:'#333'}>{item.name}</FlexText>
                     <FlexRow style={{alignItems:'center'}}>
-                        <FlexText numberOfLine={1} color={'#333'}>周杰伦</FlexText>
+                        <FlexText numberOfLine={1} fontSize={'12px'} color={isSelect?THEME.theme:'#333'}>{item.artist_name}</FlexText>
                         <Flex/>
-                        <FlexText fontSize={'12px'} color={'#333'}>{formatTime(1332)}</FlexText>
+                        <FlexText fontSize={'12px'} color={isSelect?THEME.theme:'#333'}>{formatTime(item.duration / 1000)}</FlexText>
                         <FlexWidth12/>
                     </FlexRow>
                 </FlexColumn>
@@ -85,7 +101,7 @@ const PlayerMenuListView = (props:IProps) => {
         const list = Linq.range(1,100).toArray();
         return (
             <ContentListDiv>
-                {list.map((item:any) => {
+                {props.data?.map((item:any) => {
                     return itemCellView(item)
                 })}
             </ContentListDiv>

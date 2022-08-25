@@ -20,8 +20,8 @@ const vodKey = 'vod'
 const micKey = 'mic'
 const nolKey = 'nol'
 const tabData:any  = {
-  vod:{name:'音乐',key:vodKey,leftBgColor:'#2B2D31',rightBgColor:'#141516'},
-  mic:{name:'影视',key:micKey,leftBgColor:'#2B2D31',rightBgColor:'#f0f0f0'},
+  vod:{name:'影视',key:vodKey,leftBgColor:'#2B2D31',rightBgColor:'#141516'},
+  mic:{name:'音乐',key:micKey,leftBgColor:'#2B2D31',rightBgColor:'#f0f0f0'},
   nol:{name:'小说',key:nolKey,leftBgColor:'#2B2D31',rightBgColor:'blue'}
 }
 const leftWidth = 110;

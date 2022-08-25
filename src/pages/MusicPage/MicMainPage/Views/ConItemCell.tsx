@@ -21,7 +21,7 @@ const BorderDiv = styled(FlexCenter)`
   z-index: 100;
   border-radius: 5px;
   display: none;
-  ${Con} :hover &{ // TODO & 当前组件组件 ${Con}这里感觉必须是最顶层不然不生效
+  ${Con}:hover &{ // TODO & 当前组件组件 ${Con}这里感觉必须是最顶层不然不生效
     display: flex;
   }
 `
@@ -30,10 +30,11 @@ const iconVolStyle = {fontSize:40,color:'#fff',":hover":{color:THEME.theme},curs
 const ConItemCell = (props:any) => {
   const data = props.value;
   const {micNavigate} =  useModel('global');
-  const onItemPlayClick = () => {
+  const onItemPlayClick = (event) => {
+    event && event.stopPropagation();
+    typeof props.onItemPlayClick == 'function' &&  props.onItemPlayClick(data)
   }
   const onPlayDetailClick = useCallback(() => {
-    console.log('onPlayDetailClick', props)
     props.navigate?.push('MicClassifiedDetail',data)
   },[props.navigate])
   return (
@@ -41,7 +42,7 @@ const ConItemCell = (props:any) => {
         <FlexColumn style={{position: 'relative'}}>
           <ImageDiv className='urlImg' src={data.cover_url}/>
           <BorderDiv className='b_v'>
-            <FlexCenter onClick={onItemPlayClick}><PlayCircle sx={iconVolStyle}/></FlexCenter>
+            <FlexCenter onClick={(e) => onItemPlayClick(e)}><PlayCircle sx={iconVolStyle}/></FlexCenter>
           </BorderDiv>
         </FlexColumn>
         <FlexText numberOfLine={2} style={{color:'#333', marginTop:6}}>{data.title}</FlexText>

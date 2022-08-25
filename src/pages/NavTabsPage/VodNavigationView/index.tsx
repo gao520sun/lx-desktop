@@ -24,7 +24,7 @@ const Navigation = () => {
         PubSub.publishSync('nav:pop');
     }
     const nPush = (name:string,params:object) => {
-        const page = _.find(Routes,(item:any) => item.name == name);
+        const page = _.cloneDeep(_.find(Routes,(item:any) => item.name == name));;
         if(page){
             let p = [...childrenRef.current];
             page.params =  {...params}

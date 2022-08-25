@@ -14,7 +14,7 @@ export const HeaderConDiv = styled.div`
   justify-content: space-between;
   height: 60px;
   top: 0;
-  z-index: 9999;
+  z-index: 200;
   left: 289px;
   right: 0;
   background-color:#fff;

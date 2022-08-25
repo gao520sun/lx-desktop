@@ -1,16 +1,19 @@
 import { FlexCenter, FlexColumn, FlexImage, FlexRow, FlexText, FlexWidth12 } from '@/globalStyle';
 import styled from 'styled-components'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { startTransition, useCallback, useEffect, useRef, useState } from 'react'
 import ReactAudioPlayer from 'react-audio-player';
 import { PauseCircleFilledOutlined, PlayCircleFilledOutlined, Repeat, RepeatOne, Shuffle, SkipNext, SkipPrevious, VolumeOff, VolumeUp } from '@mui/icons-material';
 import THEME from '@/pages/Config/Theme';
 import Linq from 'linq'
 import _ from 'lodash';
 import { message, Popover, Slider } from 'antd';
+import PubSub from 'pubsub-js'
 import { useDebounceFn } from 'ahooks';
 import { formatTime } from '@/utils/VodDate';
 import { LoadingOutlined } from '@ant-design/icons';
 import PlayerMenuListView from './PlayerMenuListView';
+import { useRequest } from '@umijs/max';
+import { playerUrl } from '@/services/netease';
 const Con = styled(FlexRow)`
     position: absolute;
     bottom: 0;
@@ -67,19 +70,15 @@ const iconStyle = {fontSize:40,color:THEME.theme};
 const iconSkipStyle = {fontSize:30,color:'#000',":hover":{color:THEME.theme}};
 const iconXHStyle = {fontSize:20,color:'#949494',":hover":{color:THEME.theme}};
 const iconVolStyle = {fontSize:20,color:'#9a9a9a',":hover":{color:THEME.theme}};
-const listAudio = [
-  {name:'测试 1',url:'http://96.ierge.cn/15/238/476559.mp3',img:'',author:'1111'},
-  {name:'测试 2',url:'http://96.ierge.cn/15/237/474403.mp3',img:'',author:'1111'},
-  {name:'测试 3',url:'http://96.ierge.cn/15/238/476567.mp3',img:'',author:'1111'},
-]
+
 const sequenceKey = 'sequence'
 const randomKey = 'random'
 const repeatKey = 'repeat'
 const AudioView = () => {
     const audioRef:any = useRef();
     const audioElRef:any = useRef();
-    const [audioData, setAudioData] = useState(listAudio);
-    const [audioShuffleData, setAudioShuffleData] = useState(_.shuffle(listAudio));
+    const [audioData, setAudioData] = useState([]);
+    const [audioShuffleData, setAudioShuffleData] = useState([]);
     const [currentUrlData, setCurrentUrlData] = useState<any>({});
     const [isPlay, setIsPlay] = useState(false);
     const [repeatType, setRepeatType] = useState<string>(sequenceKey); // sequence random repeat
@@ -87,12 +86,79 @@ const AudioView = () => {
     const [volume, setVolume] = useState(0.5);
     const [progress, setProgress] = useState(0);
     const [isLoadingPlay, setIsLoadingPlay] = useState(true); // 是否可以播放视频
+    const {run:playerRun} = useRequest(playerUrl,{
+      manual:true,
+      onSuccess:(data) => {
+        let dic:any = Linq.from(audioData).firstOrDefault((x:any) => x.id == data.id,null);
+        dic = Object.assign(dic || {},data)
+        setCurrentUrlData(dic);
+      },
+      onError:() => {
+        message.error('播放失败');
+      }
+    })
     useEffect(() => {
-      console.log('audioRef::',[audioElRef.current])
-      const audioDic = audioData[0];
-      setCurrentUrlData(audioDic)
-    },[])
-    // 播放
+      // 立即播放->清空当前播放列表
+      let token:any = PubSub.subscribe(window.MIC_TYPE.songPlay,(msg,data) =>{
+        setPlayerListHandle(data,'play')
+      });
+      // 加入当前播放列表 -> 不清空当前列表
+      let token1:any = PubSub.subscribe(window.MIC_TYPE.addSongPlay,(msg,value:any = []) =>{
+        let data:any = audioData.concat(value);
+        data = Linq.from(data).distinct((x:any) => x.id).toArray();// 去掉重复
+        setPlayerListHandle(data,'add')
+      });
+      // 单个播放->包含已存在和未存在
+      let token2:any = PubSub.subscribe(window.MIC_TYPE.oneSongPlay,(msg,value = []) =>{
+        // 已存在
+        const songDic:any = Linq.from(audioData).firstOrDefault((x:any) => x.id == value.id);
+        if(songDic){
+          playerRunHandle(songDic)
+          return;
+        }
+        // 未存在添加到当前播放列表中
+        let list = [...audioData];
+        let index =  Linq.from(list).indexOf((x:any) => x.id == currentUrlData.id);
+        index = index == -1 ? 0 : index;
+        list.splice(index,0,value);
+        playerRunHandle(value)
+      });
+      return () => {
+        PubSub.unsubscribe(token)
+        PubSub.unsubscribe(token1)
+        PubSub.unsubscribe(token2)
+      }
+    },[audioData])
+    // 处理歌单中的数据，
+    const setPlayerListHandle = useCallback((data:any,type:string) => {
+      let list = data;
+      setAudioData(data);
+      if(repeatType == randomKey){ // 随机 需要重新计算
+        list = _.shuffle(list);
+        setAudioShuffleData(list);
+      }
+      setTimeout(() => {
+        if(!list.length) return;
+        const playDic = list[0];
+        if(type == 'play'){ // 立即播放需要播放
+          playerRunHandle(playDic)
+        }else if(type == 'add'){
+          if(!currentUrlData.url){
+            playerRunHandle(playDic)
+          }
+        }
+      },100)
+    },[audioData])
+    // 播放器数据设置
+    const playerRunHandle = useCallback((playDic:any) => {
+      setCurrentUrlData(playDic);
+      if(!playDic.url){
+        playerRun(playDic)
+      }
+      setIsPlay(true)
+      audioElRef.current.play();
+    },[audioData])
+    // 播放或者暂停
     const onPlayAndPause = () => {
       if(isPlay){
         audioElRef.current.pause();
@@ -103,18 +169,19 @@ const AudioView = () => {
     }
     // 上一首
     const onPreviousPlay = () => {
-      const list = currentAudioData();
-      let indexUrl = Linq.from(list).indexOf(x =>x.url == currentUrlData.url);
+      const list:any = currentAudioData();
+      let indexUrl = Linq.from(list).indexOf((x:any) =>x.url == currentUrlData.url);
       indexUrl = indexUrl == 0 ? list.length : indexUrl
-      const audioDic = audioData[indexUrl - 1];
-      setCurrentUrlData(audioDic)
+      const audioDic:any = audioData[indexUrl - 1];
+      playerRunHandle(audioDic)
     }
     // 下一首
     const onNextPlay = () => {
-      let indexUrl = Linq.from(currentAudioData()).indexOf(x =>x.url == currentUrlData.url);
+      const list:any = currentAudioData();
+      let indexUrl = Linq.from(list).indexOf((x:any) =>x.url == currentUrlData.url);
       indexUrl = indexUrl == audioData.length - 1 ? -1 : indexUrl
-      const audioDic = audioData[indexUrl + 1];
-      setCurrentUrlData(audioDic)
+      const audioDic:any = audioData[indexUrl + 1];
+      playerRunHandle(audioDic)
     }
     // 是否可以播放
     const onCanPlay = (event:any) => {
@@ -144,19 +211,19 @@ const AudioView = () => {
       setProgress(value)
     }
     // 循序还是随机
-    const onRepeatRandom = (key:string) => {
-      setRepeatType(key)
+    const onRepeatRandom = useCallback((key:string) => {
       if(key == randomKey){
-        setAudioShuffleData(_.shuffle(listAudio));
+        setAudioShuffleData(_.shuffle(audioData));
       }
-    }
+      setRepeatType(key);
+    },[repeatType,audioData,audioShuffleData])
     // 当前要播放的原
     const currentAudioData = useCallback(() => {
       if(repeatType == randomKey) {
         return audioShuffleData
       } 
       return audioData
-    },[repeatType])
+    },[repeatType,audioData,audioShuffleData])
     // 音量控制
     const onVolumeChange = (value:number) => {
       hideSlider.run()
@@ -177,11 +244,11 @@ const AudioView = () => {
     const songInfoView = () => {
       return (
         <FlexRow style={{paddingLeft:28,flexShrink:0,width:318}}>
-           <FlexImage width={40} height={40} src={currentUrlData.img}/>
+           {currentUrlData.artist_pic && <FlexImage style={{flexShrink:0,width:40,height:40}} width={40} height={40} src={currentUrlData.album_pic}/>}
            <FlexWidth12/>
            <FlexColumn>
-              <FlexText style={{color:'#222',fontSize:14}}>{currentUrlData.name}</FlexText>
-              <FlexText style={{color:'#999',fontSize:12}}>{currentUrlData.author}</FlexText>
+              <FlexText numberOfLine={1} style={{color:'#222',fontSize:14}}>{currentUrlData.name}</FlexText>
+              <FlexText style={{color:'#999',fontSize:12}}>{currentUrlData.artist_name}</FlexText>
            </FlexColumn>
         </FlexRow>
       )
@@ -221,7 +288,7 @@ const AudioView = () => {
                 {volume==0 && <FlexCenter><VolumeOff sx={iconVolStyle} /></FlexCenter>}
             </DivRight>
            </Popover>
-           <PlayerMenuListView />
+           <PlayerMenuListView data={audioData} currentData={currentUrlData}/>
       </FlexRow>
      )
     }

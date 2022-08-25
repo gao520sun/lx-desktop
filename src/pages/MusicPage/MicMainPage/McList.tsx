@@ -22,7 +22,6 @@ function McList(props:any) {
       <ConMic>
         <MicContentView navigate={props.navigate}/>
       </ConMic>
-      <AudioView/>
     </Con>
   )
 }

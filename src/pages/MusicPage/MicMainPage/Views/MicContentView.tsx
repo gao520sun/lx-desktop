@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Linq from 'linq';
 import ConItemCell from './ConItemCell';
-import { classifiedSongList } from '@/services/netease';
+import { classifiedSongList, classifiedSongDetail } from '@/services/netease';
 const Con = styled.div`
   display: flex;
   flex-direction: column;
@@ -28,10 +28,10 @@ const Con = styled.div`
   }
 `
 const ContentView = styled(FlexRow)`
+    flex:1;
     flex-wrap: wrap;
     margin-left: 20px;
 `
-const List = Linq.range(1,100).toArray();
 let isDownLoading = false;
 let hasMore = true;
 const maxWidth = 240;
@@ -51,7 +51,13 @@ const MicContentView = (props:any) => {
             resize()
         }, 0);
     }
-})
+  })
+  const {run:detailRun} = useRequest(classifiedSongDetail,{
+    manual:true,
+    onSuccess:(res:any,params:any) => {
+     window.PubSub.publishSync(window.MIC_TYPE.songPlay,res.list)
+    }
+  })
   useEffect(() => {
       isDownLoading = false;
       hasMore = true;
@@ -110,15 +116,18 @@ const MicContentView = (props:any) => {
       const params  =  {}
       // run(params);
   },{wait:100})
-// 
+  // 播放歌单
+  const onItemPlayClick = (item:any) => {
+    detailRun(item.id)
+  }
   return (
     <Con id={'cList'}>
       <ContentView className='contentName' id={'contentName'}>
           {!loading || list.length ? list.map((item:any, index:number) => {
               return <FlexColumn className='itemName' style={{marginRight:14,marginBottom:10}} key={item.cover_url+item.title}>
-                          <ConItemCell value={item} navigate={props.navigate}/>
+                          <ConItemCell value={item} navigate={props.navigate} onItemPlayClick={onItemPlayClick}/>
                       </FlexColumn>
-          }):<LoadingView/>}
+          }):<LoadingView textStyle={{color:'#9999'}}/>}
           {!loading || list.length ? <LoadingFooterView textStyle={{color:'#666'}} isMore={hasMore} isLoading={isDownLoading}/> : null}
           {!loading && !list.length ? <ErrorView msg='暂无数据, 请选择其他类型'/>:null}
       </ContentView>

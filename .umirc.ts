@@ -43,6 +43,10 @@ export default defineConfig({
       'target': 'https://music.163.com',
       'changeOrigin': true,
     },
+    '/api': {
+      'target': 'https://music.163.com',
+      'changeOrigin': true,
+    },
     '/eapi': {
       'target': 'https://interface3.music.163.com',
       'changeOrigin': true,
