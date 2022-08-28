@@ -26,7 +26,7 @@ export const classifiedSongList = async (params:IClassifiedSong) => {
     }));
      return {status:200,data:result,message:''}
   }
-  // 歌单详情
+// 歌单详情
 export const classifiedSongDetail = async (id:string='') => {
     const d:any = {id: id,offset: 0,total: true,limit: 1000,n: 1000,csrf_token: ''}
     const data = weapi(d);
@@ -76,11 +76,6 @@ export const getLyric = async (id:string='') => {
     return responseSuccess(res)
   }
   return responseError('未获取数据')
-  // 例子
-  // "[00:15.596]Tell me something girl…
-  // [00:20.597]Are you happy in this modern world?
-  // [00:25.397]Or do you need more?
-  // [00:30.564]Is there something else you’re searching for?
 }
 // 获取排行帮
 export const getTopList = async () => {
@@ -127,7 +122,7 @@ const fixedSongInformation = (data:any) => {
     id: `${data.id}`, //  歌曲ID
     name: data.name, // 歌曲名字
     artist_list: data.artists,//歌手信息 一首歌可以有多个
-    artist_name: data.artists[0].name,//  歌手名字
+    artist_name: data.artists[0].name,//  歌手名字s
     artist_id: `${data.artists[0].id}`, // 歌手id
     artist_pic: data.artists[0].picUrl, // 歌手图片
     album: data.album.name, // 专辑名字
