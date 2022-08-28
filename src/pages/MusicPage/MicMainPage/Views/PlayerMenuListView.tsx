@@ -12,6 +12,7 @@ interface IProps {
 const Con = styled.div`
     overflow: hidden;
     height: 100%;
+    z-index: 99999;
 `
 const ContentListDiv = styled(FlexColumn)`
     height: 100%;

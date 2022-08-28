@@ -19,6 +19,8 @@ export const MIC_TYPE = {
     addSongPlay:'mic:add_song_play',
     oneSongPlay:'mic:one_song_play',
     createSongList:'mic:create_song_list',
+    showLyric:'mic:show_lyric',
+    dataLyric:'mic:data_lyric',
    
 }
 

@@ -18,14 +18,8 @@
     addSongPlay:string,
     oneSongPlay:string,
     createSongList:string,
-    
-  }
-  export interface IMicType1 {
-    songPlay:string,
-    addSongPlay:string,
-    oneSongPlay:string,
-    createSongList:string,
-    
+    showLyric:string,
+    dataLyric:string,
   }
 
   declare global {

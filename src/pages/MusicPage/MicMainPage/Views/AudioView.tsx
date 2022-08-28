@@ -2,7 +2,7 @@ import { FlexCenter, FlexColumn, FlexImage, FlexRow, FlexText, FlexWidth12 } fro
 import styled from 'styled-components'
 import React, { startTransition, useCallback, useEffect, useRef, useState } from 'react'
 import ReactAudioPlayer from 'react-audio-player';
-import { PauseCircleFilledOutlined, PlayCircleFilledOutlined, Repeat, RepeatOne, Shuffle, SkipNext, SkipPrevious, VolumeOff, VolumeUp } from '@mui/icons-material';
+import { KeyboardDoubleArrowDown, KeyboardDoubleArrowUp, PauseCircleFilledOutlined, PlayCircleFilledOutlined, Repeat, RepeatOne, Shuffle, SkipNext, SkipPrevious, VolumeOff, VolumeUp } from '@mui/icons-material';
 import THEME from '@/pages/Config/Theme';
 import Linq from 'linq'
 import _ from 'lodash';
@@ -13,13 +13,15 @@ import { formatTime } from '@/utils/VodDate';
 import { LoadingOutlined } from '@ant-design/icons';
 import PlayerMenuListView from './PlayerMenuListView';
 import { useRequest } from '@umijs/max';
-import { playerUrl } from '@/services/netease';
+import { getLyric, playerUrl } from '@/services/netease';
+import LyricView from './LyricView';
 const Con = styled(FlexRow)`
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     height: 70px;
+    z-index: 1000;
     border-top: 1px solid #e9e9e9;
     background-color: #ffffff;
     .ant-slider{
@@ -66,6 +68,17 @@ const SliderDiv = styled.div`
     border-color: #ff4757;
   }
 `
+const AlbumPicDiv = styled(FlexCenter)``
+const ArrowDiv = styled(FlexCenter)`
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:#00000090;
+  display: none;
+  ${AlbumPicDiv}:hover &{ // TODO & 当前组件组件 ${Con}这里感觉必须是最顶层不然不生效
+    display: flex;
+  }
+`
 const iconStyle = {fontSize:40,color:THEME.theme};
 const iconSkipStyle = {fontSize:30,color:'#000',":hover":{color:THEME.theme}};
 const iconXHStyle = {fontSize:20,color:'#949494',":hover":{color:THEME.theme}};
@@ -85,17 +98,38 @@ const AudioView = () => {
     const [volumeHovered, setVolumeHovered] = useState(false);
     const [volume, setVolume] = useState(0.5);
     const [progress, setProgress] = useState(0);
-    const [isLoadingPlay, setIsLoadingPlay] = useState(true); // 是否可以播放视频
+    const [isLoadingPlay, setIsLoadingPlay] = useState(false); // 是否可以播放视频
     const {run:playerRun} = useRequest(playerUrl,{
       manual:true,
-      onSuccess:(data) => {
-        let dic:any = Linq.from(audioData).firstOrDefault((x:any) => x.id == data.id,null);
-        dic = Object.assign(dic || {},data)
-        setCurrentUrlData(dic);
+      onSuccess:(res:any) => {
+        if(res.status == 0){
+          let dic:any = Linq.from(audioData).firstOrDefault((x:any) => x.id == res.data.id,{});
+          dic = Object.assign(dic || {},res.data)
+          setCurrentUrlData(dic);
+          lyricRun(dic.id)
+        }else {
+          isPlay && audioElRef.current.pause();
+          setIsPlay(false)
+          message.error(res.message);
+          setTimeout(() => {
+            message.error('自动播放下一首');
+            onNextPlay()
+          }, 2000);
+        }
       },
       onError:() => {
         message.error('播放失败');
       }
+    })
+    const {run:lyricRun} = useRequest(getLyric,{
+      manual:true,
+      onSuccess:((res:any) => {
+        if(res.status == 0){
+          const cData = _.cloneDeep(currentUrlData);
+          cData.lyric = res.data;
+          setCurrentUrlData(cData);
+        }
+      })
     })
     useEffect(() => {
       // 立即播放->清空当前播放列表
@@ -160,6 +194,7 @@ const AudioView = () => {
     },[audioData])
     // 播放或者暂停
     const onPlayAndPause = () => {
+      if(!audioData.length){message.error('当前没有播放源'); return;}
       if(isPlay){
         audioElRef.current.pause();
       }else {
@@ -169,16 +204,18 @@ const AudioView = () => {
     }
     // 上一首
     const onPreviousPlay = () => {
+      if(!audioData.length){message.error('当前没有播放源'); return;}
       const list:any = currentAudioData();
-      let indexUrl = Linq.from(list).indexOf((x:any) =>x.url == currentUrlData.url);
+      let indexUrl = Linq.from(list).indexOf((x:any) =>x.id == currentUrlData.id);
       indexUrl = indexUrl == 0 ? list.length : indexUrl
       const audioDic:any = audioData[indexUrl - 1];
       playerRunHandle(audioDic)
     }
     // 下一首
     const onNextPlay = () => {
+      if(!audioData.length){message.error('当前没有播放源'); return;}
       const list:any = currentAudioData();
-      let indexUrl = Linq.from(list).indexOf((x:any) =>x.url == currentUrlData.url);
+      let indexUrl = Linq.from(list).indexOf((x:any) =>x.id == currentUrlData.id);
       indexUrl = indexUrl == audioData.length - 1 ? -1 : indexUrl
       const audioDic:any = audioData[indexUrl + 1];
       playerRunHandle(audioDic)
@@ -237,6 +274,10 @@ const AudioView = () => {
     const onAfterChange = (value:number)  => {
       audioElRef.current.currentTime = value;
     }
+    // 进入歌词页面
+    const onGoLyricPage = () => {
+      window.PubSub.publishSync(window.MIC_TYPE.showLyric,{isShow:true})
+    }
     const hideSlider = useDebounceFn(() => {
       setVolumeHovered(false);
     },{wait:3000})
@@ -244,11 +285,17 @@ const AudioView = () => {
     const songInfoView = () => {
       return (
         <FlexRow style={{paddingLeft:28,flexShrink:0,width:318}}>
-           {currentUrlData.artist_pic && <FlexImage style={{flexShrink:0,width:40,height:40}} width={40} height={40} src={currentUrlData.album_pic}/>}
+           {currentUrlData.artist_pic && <AlbumPicDiv style={{position:'relative'}}>
+              <FlexImage style={{flexShrink:0,width:40,height:40}} width={40} height={40} src={currentUrlData.album_pic}/>
+              <ArrowDiv onClick={() => {onGoLyricPage()}}><KeyboardDoubleArrowUp sx={{color:'#fff',fontSize:24}}/></ArrowDiv>
+            </AlbumPicDiv>}
            <FlexWidth12/>
            <FlexColumn>
               <FlexText numberOfLine={1} style={{color:'#222',fontSize:14}}>{currentUrlData.name}</FlexText>
-              <FlexText style={{color:'#999',fontSize:12}}>{currentUrlData.artist_name}</FlexText>
+              {currentUrlData.name && <FlexRow>
+                <FlexText style={{color:'#999',fontSize:12}}>歌手：{currentUrlData.artist_name}</FlexText>
+                <FlexText style={{color:'#999',fontSize:12,marginLeft:15}}>{'来源：网易云'}</FlexText>
+              </FlexRow>}
            </FlexColumn>
         </FlexRow>
       )
@@ -324,6 +371,7 @@ const AudioView = () => {
             {playerToolView()}
           </FlexRow>
           {sliderProgressView()}
+          <LyricView value = {currentUrlData} progress={progress}/>
       </Con>
     )
 }

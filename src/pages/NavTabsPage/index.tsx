@@ -34,6 +34,7 @@ const ContentDiv:any = styled.div`
 `
 const MicContentDiv:any = styled(ContentDiv)`
   flex-direction: row;
+  position: relative;
 `
 function NavTabsPage() {
   const [activeKey,setActiveKey] = useState(micKey)
@@ -71,8 +72,8 @@ function NavTabsPage() {
                 <FlexColumn style={{position:'relative',width:'100%',height:'100%'}}>
                   <MicNavHeaderView/>
                   <MicNavigationView/>
-                  <AudioView/>
                 </FlexColumn> 
+                <AudioView/>
               </MicContentDiv>
             </Tabs.TabPane>
             <Tabs.TabPane tab={tabItemName(tabData[nolKey])} key={nolKey}>

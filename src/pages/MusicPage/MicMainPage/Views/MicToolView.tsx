@@ -62,6 +62,9 @@ const MicToolView = () => {
           <CellView onClick={()=>micNavigate.popToTop()}>
                   <FlexText numberOfLine={1} color={'#333'}>{'精选歌单'}</FlexText>
           </CellView>
+          <CellView onClick={()=>{}}>
+                  <FlexText numberOfLine={1} color={'#333'}>{'排行榜'}</FlexText>
+          </CellView>
       </FlexColumn>
     )
   }

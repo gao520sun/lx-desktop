@@ -1,0 +1,29 @@
+.box-enter{
+    margin-top:100%;
+}
+.box-enter-active{
+    margin-top:0%;
+    transition: all .35s
+}
+.box-exit {
+    margin-top: 0px;
+}
+.box-exit-active {
+    margin-top: 100%;
+    transition: all .35s
+}
+
+/* .box-enter, .box-appear{
+    transform: translateY(100%)
+}
+.box-enter-active, .box-appear-active {
+    transform: translateY(0);
+    transition: transform .35s ease ;;
+}
+.box-exit {
+    transform: translateY(0)
+}
+.box-exit-active {
+    transform: translateY(100%);
+    transition:  transform .35s ease-out
+} */
