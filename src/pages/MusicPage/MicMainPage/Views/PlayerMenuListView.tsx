@@ -7,12 +7,13 @@ import THEME from '@/pages/Config/Theme';
 import { AddCard, Delete, FormatListNumberedRtl } from '@mui/icons-material';
 import { formatTime } from '@/utils/VodDate';
 import PubSub from 'pubsub-js'
+import CreateSongListModalView from './CreateSongListModalView';
 interface IProps {
 }
 const Con = styled.div`
     overflow: hidden;
     height: 100%;
-    z-index: 99999;
+    z-index: 9999;
 `
 const ContentListDiv = styled(FlexColumn)`
     height: 100%;
@@ -40,6 +41,8 @@ const CellDiv = styled(FlexRow)`
 const iconVolStyle = {fontSize:20,color:'#9a9a9a',":hover":{color:THEME.theme}};
 const iconItemStyle = {...iconVolStyle,fontSize:18};
 const PlayerMenuListView = (props:any) => {
+    const [showModal, setShowModal] = useState(false);
+    const [saveSong, setSaveSong] = useState([]);
     const [visible, setVisible] = useState(false); // 显示菜单
     const [placement] = useState<DrawerProps['placement']>('right');
     const onClose = () => {
@@ -49,28 +52,29 @@ const PlayerMenuListView = (props:any) => {
         PubSub.publishSync(window.MIC_TYPE.oneSongPlay,item)
     }
     const onAddSongListClick = () => {
-
+        setSaveSong(props.data);
+        setShowModal(true);
     }
     const onDeletePlayerListClick = () => {
-        
+        window.PubSub.publishSync(window.MIC_TYPE.clearSongPlay)
     }
     const headerView = () => {
         const textStyle = {color:'#333', fontSize:12,lineHeight:'20px'};
         const lineWidth = '6px'
         return (
-            <FlexColumn style={{marginTop:60}}>
+            <FlexColumn style={{marginTop:0}}>
                 <FlexText style={{fontSize:20,color:'#333'}}>播放列表</FlexText>
                 <FlexHeight10/>
                 <FlexRow style={{alignItems:'center',}}>
                     <FlexText style={textStyle}>共{props.data?.length || 0}首歌曲</FlexText>
                     <Flex/>
-                    <FlexRow onClick={onAddSongListClick}>
+                    <FlexRow style={{cursor:'pointer'}} onClick={onAddSongListClick}>
                         <FlexCenter ><AddCard sx={iconItemStyle}/></FlexCenter>
                         <FlexWidth width={lineWidth}/>
-                        <FlexText style={textStyle}>添加全部歌单</FlexText>
+                        <FlexText style={textStyle}>添加到我的歌单</FlexText>
                         <FlexWidth10/>
                     </FlexRow>
-                    <FlexRow onClick={onDeletePlayerListClick}>
+                    <FlexRow style={{cursor:'pointer'}} onClick={onDeletePlayerListClick}>
                         <FlexCenter><Delete sx={iconItemStyle}/></FlexCenter>
                         <FlexWidth width={lineWidth}/>
                         <FlexText style={textStyle}>清空列表</FlexText>
@@ -99,7 +103,6 @@ const PlayerMenuListView = (props:any) => {
         )
     }
     const listContentView = () => {
-        const list = Linq.range(1,100).toArray();
         return (
             <ContentListDiv>
                 {props.data?.map((item:any) => {
@@ -128,6 +131,7 @@ const PlayerMenuListView = (props:any) => {
                     {listContentView()}
                 </FlexColumn>
             </Drawer>
+            <CreateSongListModalView showModal = {showModal} saveData={saveSong} onCancel={() => setShowModal(false)}/>
         </Con>
     )
 }

@@ -17,6 +17,7 @@ export const STORE_TYPE = {
 export const MIC_TYPE = {
     songPlay:'mic:song_play',
     addSongPlay:'mic:add_song_play',
+    clearSongPlay:'mic:clear_song_play',
     oneSongPlay:'mic:one_song_play',
     createSongList:'mic:create_song_list',
     showLyric:'mic:show_lyric',

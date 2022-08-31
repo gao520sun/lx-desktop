@@ -157,15 +157,25 @@ const AudioView = () => {
         list.splice(index,0,value);
         playerRunHandle(value)
       });
+      // 清空当前播放列表
+      let token3:any = PubSub.subscribe(window.MIC_TYPE.clearSongPlay,(msg,value:any = []) =>{
+        setAudioShuffleData([])
+        setAudioData([])
+        setCurrentUrlData({})
+        setIsPlay(false)
+        setProgress(0)
+        audioElRef.current.pause();
+      });
       return () => {
         PubSub.unsubscribe(token)
         PubSub.unsubscribe(token1)
         PubSub.unsubscribe(token2)
+        PubSub.unsubscribe(token3)
       }
     },[audioData])
     // 处理歌单中的数据，
     const setPlayerListHandle = useCallback((data:any,type:string) => {
-      let list = data;
+      let list = data || [];
       setAudioData(data);
       if(repeatType == randomKey){ // 随机 需要重新计算
         list = _.shuffle(list);

@@ -46,7 +46,7 @@ const Navigation = () => {
             {children.map((item:any, index:number)=>{
               const ComponentPage = item.component;
                 return (
-                    <CSSTransition key={item.name} classNames="movieLeft" timeout={1000}  >
+                    <CSSTransition key={item.name} classNames="movieLeft" timeout={300}  >
                         {/* TODO 底色的背景需要更改，先记录 */}
                         <div key={item.name} style={{position:'absolute',left:0,right:0,height:'100%',width:'100%',overflow:'hidden'}}>
                             <ComponentPage navigate={navigate} params={item.params}/>

@@ -101,7 +101,7 @@ const NavHeaderView = (props:any) => {
   }
   return (
     <HeaderConDiv id={'headerNav'}>
-      {count == 1 ? <div style={{color:THEME.theme,fontSize:16,marginLeft:20}}>凌川音乐</div>
+      {count == 1 ? ''
       :<BackNavView navigate={micNavigate} iconStyle={{color:'#999'}}/>}
       <Search id={'headerSearch'}>
           <SearchOutlined style={{fontSize:16,color:'#999',marginRight:10}}/>

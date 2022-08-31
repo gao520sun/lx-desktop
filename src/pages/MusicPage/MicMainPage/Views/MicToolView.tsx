@@ -6,7 +6,7 @@ import CreateSongListModalView from './CreateSongListModalView'
 import { createSongList, getCollectSongList, getSongList, saveHasSongList } from '../SongListModel'
 import PubSub from 'pubsub-js'
 import { useModel } from '@umijs/max'
-import { clearStore } from '@/utils/Storage'
+import THEME from '@/pages/Config/Theme'
 const Con = styled(FlexColumn)`
   width: 180px;
   height: 100%;
@@ -27,6 +27,10 @@ const CellView = styled(FlexRow)`
   &:hover {
     background-color: #e2e2e2;
   };
+`
+const YyDiv = styled(FlexColumn)`
+  -webkit-app-region: drag;
+  padding:12px;
 `
 const MicToolView = () => {
   const {micNavigate} = useModel('global')
@@ -62,7 +66,7 @@ const MicToolView = () => {
           <CellView onClick={()=>micNavigate.popToTop()}>
                   <FlexText numberOfLine={1} color={'#333'}>{'精选歌单'}</FlexText>
           </CellView>
-          <CellView onClick={()=>{}}>
+          <CellView onClick={()=>micNavigate.push('MicTopList')}>
                   <FlexText numberOfLine={1} color={'#333'}>{'排行榜'}</FlexText>
           </CellView>
       </FlexColumn>
@@ -104,7 +108,10 @@ const MicToolView = () => {
   }
   return (
     <Con>
-      <FlexHeight10 height={'40px'}/>
+      <YyDiv>
+        <FlexText style={{color:THEME.theme,fontSize:16}}>凌川音乐</FlexText>
+      </YyDiv>
+      <FlexHeight10 height={'20px'}/>
       {platformSongListView()}
       <FlexHeight10 height={'20px'}/>
       {createSongListView()}

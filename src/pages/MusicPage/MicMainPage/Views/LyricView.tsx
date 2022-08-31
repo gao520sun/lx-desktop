@@ -1,5 +1,5 @@
 import { FlexCenter, FlexColumn, FlexHeight, FlexImage, FlexRow, FlexText, FlexWidth } from '@/globalStyle'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { CSSTransition} from 'react-transition-group'
 import './styles.css'
@@ -7,6 +7,7 @@ import { formatTime } from '@/utils/VodDate'
 import Linq from 'linq'
 import THEME from '@/pages/Config/Theme'
 import { ExpandMore } from '@mui/icons-material'
+import { useModel } from '@umijs/max';
 const Con = styled(FlexColumn)`
     position: fixed;
     top:0;
@@ -33,7 +34,9 @@ const ConLyricDiv = styled(FlexColumn)`
 
 `;
 const iconDownStyle = {fontSize:30,color:'#9a9a9a',":hover":{color:THEME.theme}};
+let jumpData = '';
 const LyricView = (props:any) => {
+    const {micNavigate} =  useModel('global');
     const [showMessage, setShowMessage] = useState(false);
     const data = props.value;
     useEffect(() => {
@@ -68,12 +71,30 @@ const LyricView = (props:any) => {
                 lyricDoc.scrollTop -= Math.ceil(centerHeight - (currentTextTop));
             }
         }
+        return () => {
+        }
     },[formatTime(props.progress),showMessage])
     const lyricHandle = useMemo(() => {
         const lyric = data.lyric?.lrc?.lyric;
         const lyricArr = lyric ? lyric.split('\n') : [];
         return lyricArr;
     },[data.lyric?.lrc?.lyric])
+    // 点击专辑
+    const onAlbumClick = () => {
+        jumpData = 'album';
+        setShowMessage(false);
+    }
+    // 点击歌手
+    const onArtistClick = () => {
+        jumpData = 'artist'
+        setShowMessage(false);
+    }
+    const onExitedCallback = useCallback(() => {
+        console.log('退出完成1',jumpData)
+        if(jumpData){
+            micNavigate?.push('MicClassifiedDetail',{type:jumpData,...data})
+        }
+    },[showMessage,jumpData])
     const contentView = () => {
         return (
             <FlexRow style={{justifyContent:'center',paddingTop:100,height:'100%'}}>
@@ -84,10 +105,11 @@ const LyricView = (props:any) => {
                     <FlexHeight/>
                     <FlexRow style={{borderBottom:'1px solid #f0f0f0',paddingBottom:10}}>
                         <FlexText style={{fontSize:14,color:'#999'}}>歌手：</FlexText>
-                        <FlexText style={{fontSize:14,color:'#333'}}>{data.artist_name}</FlexText>
+                        <FlexCenter onClick={onArtistClick} style={{cursor:'pointer'}}><FlexText style={{fontSize:14,color:'#333'}} >{data.artist_name}</FlexText></FlexCenter>
                         <FlexWidth width='50px'/>
                         <FlexText style={{fontSize:14,color:'#999'}}>专辑：</FlexText>
-                        <FlexText numberOfLine={1} style={{fontSize:14,color:'#333'}}>{data.album}</FlexText>
+                        <FlexCenter  onClick={onAlbumClick} style={{cursor:'pointer'}}><FlexText numberOfLine={1} style={{fontSize:14,color:'#333'}}>{data.album}</FlexText></FlexCenter>
+                        
                     </FlexRow>
                     <FlexHeight/>
                     {lyricContentView}
@@ -102,9 +124,9 @@ const LyricView = (props:any) => {
         }
         return (
             <ConLyricDiv id='lyric'>
-                {lyricHandle.map((item:any)=> {
+                {lyricHandle.map((item:any,index:number)=> {
                     let str = item.slice(item.indexOf("]") + 1)
-                    return <div id={item} key={item} style={{fontSize:14,color:'#666',flexShrink:0, marginBottom:12}}>{str}</div>
+                    return <div id={item} key={item + index} style={{fontSize:14,color:'#666',flexShrink:0, marginBottom:12}}>{str}</div>
                 })}
             </ConLyricDiv>
         )
@@ -112,14 +134,14 @@ const LyricView = (props:any) => {
     return (
             <CssTran in={showMessage}
                 classNames="box"
-                timeout={1000}
+                timeout={300}
                 unmountOnExit={true}
-                onEnter={ (el: any)=>console.log('开始进入')}
+                onEnter={ (el: any)=>{jumpData = ''}}
                 onEntering={ (el: any) => console.log('正在进入')}
                 onEntered={ (el: any) => console.log('进入完成')}
                 onExit={  (el: any) => console.log('开始退出')}
                 onExiting={  (el: any) => console.log('正在退出')}
-                onExited={  (el: any) => console.log('退出完成')}>
+                onExited={  (el: any) => onExitedCallback()}>
                 <Con>
                     {contentView()}
                 </Con>

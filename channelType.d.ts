@@ -16,6 +16,7 @@
   export interface IMicType {
     songPlay:string,
     addSongPlay:string,
+    clearSongPlay:string,
     oneSongPlay:string,
     createSongList:string,
     showLyric:string,

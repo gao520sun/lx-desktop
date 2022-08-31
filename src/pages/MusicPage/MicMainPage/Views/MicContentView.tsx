@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import Linq from 'linq';
 import ConItemCell from './ConItemCell';
 import { classifiedSongList, classifiedSongDetail } from '@/services/netease';
+import { message } from 'antd';
 const Con = styled.div`
   display: flex;
   flex-direction: column;
@@ -55,7 +56,11 @@ const MicContentView = (props:any) => {
   const {run:detailRun} = useRequest(classifiedSongDetail,{
     manual:true,
     onSuccess:(res:any,params:any) => {
-     window.PubSub.publishSync(window.MIC_TYPE.songPlay,res.list)
+     if(res.status == 0){
+      window.PubSub.publishSync(window.MIC_TYPE.songPlay,res.data.list)
+     }else {
+      message.error(res.message)
+     }
     }
   })
   useEffect(() => {

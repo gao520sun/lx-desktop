@@ -51,6 +51,24 @@ export const FlexText:any =  styled(TextView)`
     font-size: ${(props) => props.fontSize || '14px'};
 `
 
+export const FlexConScroll = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  /* overflow-y: overlay; */
+  background-color: #fff;
+  &::-webkit-scrollbar{
+        width: 8px;
+        background-color: transparent;
+  };
+  &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background-color: #a2a3a448;
+  }
+`
+
 export const FlexWidth:any = styled.div`
     flex-shrink: 0;
     width: ${(props:any) => props.width || '10px'};

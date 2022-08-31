@@ -33,7 +33,7 @@ export const classifiedSongDetail = async (id:string='') => {
     const target_url = 'weapi/v3/playlist/detail';
     const res =   await request(target_url,{method:'POST',data:new URLSearchParams(data).toString()})
     const res_track = await classifiedSongDetailTrack(res.playlist.trackIds);
-    return {status:200,data:{info:res.playlist,list:res_track},message:''}
+    return responseSuccess({info:fixedSongBaseInfo(res.playlist),list:res_track})
 }
 // 获取歌曲详情
 export const classifiedSongDetailTrack = async(playlist_tracks=[]) => {
@@ -86,7 +86,10 @@ export const getTopList = async () => {
     data:new URLSearchParams(data).toString()
   })
   console.log('res::',res);
-  return {status:200,data:res,message:''}
+  if(res) {
+    return responseSuccess(res)
+  }
+  return responseError('暂无数据')
 }
 // 获取专辑信息
 interface IAlbum {
@@ -98,8 +101,18 @@ interface IAlbum {
 export const getAlbumInfo = async (params:IAlbum) => {
   const target_url = `api/album/${params.album_id}?ext=true&id=${params.album_id}&offset=${params.offset}&total=true&limit=${params.limit}`;
   const res =  await request(target_url,{method:'GET'});
-  const tracks = res.songs.map((data: any) => fixedSongInformation(data.album));
-  return {status:200,data:{info:res.album,list:tracks},message:''}
+  if(res?.album?.songs){
+    const tracks = res.album.songs.map((data: any) => fixedSongInformation(data));
+    return responseSuccess({info:fixedSongBaseInfo(res.album),list:tracks})
+  }
+  return responseError('暂无数据')
+}
+// 歌手歌曲网易前50首
+export const getArtistInfo = async (artist_id:any) => {
+  const target_url = `api/artist/${artist_id}?ext=true&id=${artist_id}&offset=50&total=true&limit=10`;
+  const res =  await request(target_url,{method:'GET'});
+  const tracks = res.hotSongs.map((data: any) => (fixedSongInformation(data)));
+  return responseSuccess({info:fixedSongBaseInfo(res.artist),list:tracks})
 }
 // 搜索信息
 interface ISearch {
@@ -131,6 +144,24 @@ const fixedSongInformation = (data:any) => {
     source: 'netease', // 来源网易
     source_url: `https://music.163.com/#/song?id=${data.id}`, // 来源链接
     duration:data.duration , // 歌曲时长
+  }
+}
+const fixedSongBaseInfo = (data:any={}) =>  {
+  return {
+    // 歌曲名字 作者的名字等
+    name:data.name,
+    // 歌曲id 专辑id 第二个
+    id:data.id,
+    // 封面
+    coverImgUrl:data.coverImgUrl || data.picUrl,
+    // 作者
+    nickname:data.creator?.nickname || data.name || '音乐人',
+    // 作者头像
+    avatarUrl:data.creator?.avatarUrl || data.picUrl || '',
+    // 描述
+    description:data.description || '',//
+    // 表签
+    tag:data.tags || [],
   }
 }
 

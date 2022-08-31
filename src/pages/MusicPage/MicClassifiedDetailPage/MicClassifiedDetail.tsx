@@ -1,7 +1,7 @@
 import { useRequest } from '@umijs/max'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { classifiedSongDetail } from '@/services/netease';
+import { classifiedSongDetail, getAlbumInfo, getArtistInfo } from '@/services/netease';
 import ErrorView from '@/pages/Components/ErrorView';
 import LoadingView from '@/pages/Components/LoadingView';
 import { Flex, FlexCenter, FlexColumn, FlexHeight10, FlexHeight12, FlexImage, FlexRow, FlexText, FlexWidth, FlexWidth10, FlexWidth12 } from '@/globalStyle';
@@ -115,20 +115,34 @@ interface IProps  {
 }
 
 const MicClassifiedDetail = (props:IProps) => {
-  const params = props.params
+  const params = props.params;
+  // console.log('params::',params)
   const {micNavigate} =  useModel('global');
   const [showModal, setShowModal] = useState(false);
   const [updatePage, setUpdatePage] = useState(false);
   const [saveSong, setSaveSong] = useState([]);
   const [list, setList] = useState([]);
   const [songInfo, setSongInfo] = useState<any>({});
-  const {run, loading,error} = useRequest(classifiedSongDetail,{
+  const getDataApi:any = () => {
+    if(props.params.type == 'album'){
+      return getAlbumInfo;
+    }else if(props.params.type == 'artist'){
+      return getArtistInfo
+    }
+    return classifiedSongDetail
+  }
+  const {run, loading,error} = useRequest(getDataApi(),{
     manual:true,
     onSuccess:(res:any,params:any) => {
-      setSongInfo(res.info || {});
-      setList(res.list)
+      if(res.status == 0){
+        setSongInfo(res.data.info || {});
+        setList(res.data.list)
+      }else {
+        message.error(res.message)
+      }
     }
   })
+  
   useEffect(() => {
     if(props.params.type == 'custom'){
       const slDic = getSingleSongList(params.name);
@@ -138,6 +152,10 @@ const MicClassifiedDetail = (props:IProps) => {
       const slDic = getCollectSingleSongList(params.name);
       slDic && setList(slDic.list);
       slDic && setSongInfo(slDic.info)
+    }else if(props.params.type == 'album'){
+      run({album_id:props.params.album_id,offset:0,limit:100})
+    }else if(props.params.type == 'artist'){
+      run(props.params.artist_id)
     }else {
       run(params.id)
     }
@@ -217,8 +235,8 @@ const MicClassifiedDetail = (props:IProps) => {
           <FlexText color={'#222'} fontSize='20px' style={{}}>{songInfo.name}</FlexText>
           <FlexHeight10/>
           <FlexRow style={{alignItems:'center'}}>
-            <FlexImage style={{width:30, height:30}} src={songInfo.creator?.avatarUrl}/>
-            <FlexText numberOfLine={1} style={{color:'#666',fontSize:14, marginLeft:8}}>{songInfo.creator?.nickname}</FlexText>
+            <FlexImage style={{width:30, height:30}} src={songInfo.avatarUrl}/>
+            <FlexText numberOfLine={1} style={{color:'#666',fontSize:14, marginLeft:8}}>{songInfo.nickname}</FlexText>
             <FlexRow>
               {songInfo.tags?.map((item:string) => <FlexText key={item} numberOfLine={1} style={{color:'#999',fontSize:12, marginLeft:8}}>#{item}</FlexText>)}
             </FlexRow>
@@ -249,12 +267,13 @@ const MicClassifiedDetail = (props:IProps) => {
       </FlexRow>
     )
   }
-  const songCellView = (item:any) => {
-    const isShowDelete = props.params.type == 'custom'? true : false
+  const songCellView = (item:any,index:number) => {
+    const isShowDelete = props.params.type == 'custom'? true : false;
+    const indexStr = index+1 >= 10 ? index+1 : '0' + (index+1)
     return (
       <SongItemDiv key={item.id}>
         <FlexRow style={{width:'46%',flexShrink:0}}>
-          <CellText>{item.name}</CellText>
+          <CellText>{`${indexStr}. ${item.name}`}</CellText>
           <Flex/>
           <SongItemToolDiv>
             <FlexCenter onClick={() => onPlayClick(item)}><PlayArrow sx={iconStyle}/></FlexCenter>
@@ -286,7 +305,7 @@ const MicClassifiedDetail = (props:IProps) => {
       <SongContentDiv>
         <SongTopDiv style={{height:30}}>
           <FlexRow style={{width:'46%',flexShrink:0}}>
-            <FlexText style={{color:'#666'}}>歌曲</FlexText>
+            <FlexText style={{color:'#666'}}>歌曲({list.length})</FlexText>
           </FlexRow>
           <FlexRow style={{width:'22%',flexShrink:0,paddingRight:10}}>
             <FlexText style={{color:'#666'}}>歌手</FlexText>
@@ -298,7 +317,7 @@ const MicClassifiedDetail = (props:IProps) => {
           <FlexText style={{color:'#666'}}>时长</FlexText>
           </FlexRow>
         </SongTopDiv>
-        {list.map(item => songCellView(item))}
+        {list?.map((item,index:number) => songCellView(item,index))}
       </SongContentDiv>
     )
   }

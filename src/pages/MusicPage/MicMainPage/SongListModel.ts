@@ -77,14 +77,16 @@ export const getCollectSingleSongList = (name:string) => {
 // 删除当前收藏单个歌单
 export const deleteSingleSongList = (name:string,type:string) => {
     if(!name.length){return {status:-1,message:'歌单名称不能为空'}}
-    let songList = []
+    let songList:any = []
     if(type == 'custom') {
         songList = getSongList();
+        songList =  Linq.from(songList).where((x:any) => x.info.name != name).toArray();
+        setStoreItem(window.STORE_TYPE.micSongList,songList);
     }else if(type == 'collect'){
         songList = getCollectSongList();
+        songList =  Linq.from(songList).where((x:any) => x.info.name != name).toArray();
+        setStoreItem(window.STORE_TYPE.collectSongList,songList);
     }
-    songList =  Linq.from(songList).where((x:any) => x.info.name != name).toArray();
-    setStoreItem(window.STORE_TYPE.collectSongList,songList);
     PubSub.publishSync(window.MIC_TYPE.createSongList,songList)
     return {status:0,message:'删除歌单成功'}
 }
