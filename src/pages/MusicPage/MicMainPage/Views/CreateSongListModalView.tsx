@@ -2,7 +2,7 @@ import { FlexColumn, FlexImage, FlexText, FlexRow, FlexWidth12, FlexHeight12, Fl
 import { Button, Input, message, Modal } from 'antd'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { createSongList, getSongList, saveHasSongList } from '../SongListModel'
+import { createSongList, getSongList, saveHasSongList } from '../../MicModel/SongListModel'
 const Con = styled(FlexColumn)`
  
 `
@@ -37,7 +37,6 @@ const CreateSongListModalView = (props:any) => {
   const [songList, setSongList] = useState([]);
   useEffect(() => {
     const list = getSongList();
-    console.log('list::',list)
     setSongList(list)
   },[props.showModal])
   const onNewSongOkClick = () => {

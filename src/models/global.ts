@@ -6,6 +6,7 @@ const useUser = () => {
   const [name, setName] = useState<string>(DEFAULT_NAME);
   const [navigate, setNavigate] = useState<any>({});
   const [micNavigate, setMicNavigate] = useState<any>({});
+  const [micSLSourceKey, setMicSLSourceKey] = useState<any>('netease');
   return {
     name,
     setName,
@@ -13,6 +14,8 @@ const useUser = () => {
     setNavigate,
     micNavigate,
     setMicNavigate,
+    micSLSourceKey,
+    setMicSLSourceKey
   };
 };
 

@@ -22,6 +22,7 @@ export const MIC_TYPE = {
     createSongList:'mic:create_song_list',
     showLyric:'mic:show_lyric',
     dataLyric:'mic:data_lyric',
+    sourceKey:'mic:source:key',
    
 }
 

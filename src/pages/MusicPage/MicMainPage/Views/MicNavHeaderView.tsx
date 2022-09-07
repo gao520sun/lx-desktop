@@ -1,3 +1,4 @@
+import { FlexRow, FlexText } from '@/globalStyle'
 import BackNavView from '@/pages/Components/BackNavView'
 import THEME from '@/pages/Config/Theme'
 import { ClockCircleOutlined, SearchOutlined } from '@ant-design/icons'
@@ -6,6 +7,7 @@ import { useModel } from '@umijs/max'
 import { Input } from 'antd'
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
+import { sourceDefKey, sourceList } from '../../MicModel/MicCategory'
 export const HeaderConDiv = styled.div`
   display: flex;
   position: fixed;
@@ -27,19 +29,20 @@ const Search = styled.div`
   justify-content: space-between;
   align-items: center;
   background-color: #99999930;
-  width: 230px;
+  width: 200px;
   height: 36px;
   border-radius: 200px;
   padding: 0px 20px;
   position: absolute;
-  left: calc(50% - 115px);
+  /* left: calc(50% - 115px); */
+  left: 60px;
   color:#fff;
   font-size: 14px;
 `
 const InputView = styled(Input)`
   background:transparent;
   border:0;
-  color:#fff;
+  color:#333;
   .ant-input:focus{
     box-shadow: none;
     border-color: transparent;
@@ -48,7 +51,6 @@ const InputView = styled(Input)`
     border-color: transparent;
   }
 `
-
 const NavHeaderView = (props:any) => {
   const {micNavigate} =  useModel('global')
   const [forceUpdate,setForceUpdate] = useState(true);
@@ -56,24 +58,11 @@ const NavHeaderView = (props:any) => {
   const [searchValue, setSearchValue] = useState('')
   useEffect(() => {
       let token:any = PubSub.subscribe('micNav:push',(msg,data) =>{
-        // TODO vod 上下滑动
-        // let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
-        // let headerNav:HTMLElement | null = document.getElementById('headerNav');
-        // headerSearch ? headerSearch.style.background = '#99999960' : null;
-        // headerNav ? headerNav.style.background = '#141516' : null;
         setForceUpdate(!forceUpdate)
       });
-        let tokenPop:any = PubSub.subscribe('micNav:pop',(msg,data) =>{
-          // TODO vod 上下滑动
-        // const doc:any = document.getElementById('vod_list');
-        // if(doc?.scrollTop < 100){
-        //   let headerSearch:HTMLElement | null = document.getElementById('headerSearch');
-        //   let headerNav:HTMLElement | null = document.getElementById('headerNav');
-        //   headerNav ? headerNav.style.background='linear-gradient(0deg,#8B8C9310,#21252D45,#21252D80)' : null;
-        //   headerSearch ? headerSearch.style.background='#00000010' : null;
-        // }
+      let tokenPop:any = PubSub.subscribe('micNav:pop',(msg,data) =>{
         setForceUpdate(!forceUpdate)
-    });
+      });
     return () => {
       PubSub.unsubscribe(token)
       PubSub.unsubscribe(tokenPop)
@@ -81,14 +70,8 @@ const NavHeaderView = (props:any) => {
   },[forceUpdate])
   const onFocus = () => {
     const route = micNavigate?.routes()[count - 1];
-    if(route?.name != 'searchVod'){
-        micNavigate.push('searchVod')
-    }
-  }
-  const onHistoryClick = () => {
-    const route = micNavigate?.routes()[count - 1];
-    if(route?.name != 'vodHistory'){
-        micNavigate.push('vodHistory')
+    if(route?.name != 'MicSearch'){
+        micNavigate.push('MicSearch')
     }
   }
   const onChange = (event:any) => {
@@ -96,20 +79,16 @@ const NavHeaderView = (props:any) => {
   }
   const onKeyDown = (event:any) => {
     if(event.keyCode == 13){
-      PubSub.publishSync('input:value',searchValue);
+      PubSub.publishSync('mic:input:value',searchValue);
     }
   }
   return (
     <HeaderConDiv id={'headerNav'}>
-      {count == 1 ? ''
-      :<BackNavView navigate={micNavigate} iconStyle={{color:'#999'}}/>}
+      {count == 1 ? '':<BackNavView navigate={micNavigate} iconStyle={{color:'#999'}}/>}
       <Search id={'headerSearch'}>
           <SearchOutlined style={{fontSize:16,color:'#999',marginRight:10}}/>
           <InputView placeholder='搜索音乐' value={searchValue} onKeyDown={onKeyDown} onChange={onChange} onFocus={onFocus}/>
       </Search>
-      <div style={{marginRight:40}} onClick={onHistoryClick}>
-        <ClockCircleOutlined style={{fontSize:16,color:THEME.white}}/>
-      </div>
     </HeaderConDiv>
   )
 }

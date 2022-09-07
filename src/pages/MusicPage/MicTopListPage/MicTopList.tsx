@@ -1,5 +1,5 @@
 import { Flex, FlexCenter, FlexColumn, FlexConScroll, FlexImage, FlexRow, FlexText } from '@/globalStyle'
-import { classifiedSongDetail, getTopList } from '@/services/netease'
+import { classifiedSongDetail } from '@/services/netease'
 import { useRequest, useModel } from '@umijs/max'
 import THEME from '@/pages/Config/Theme';
 import ErrorView from '@/pages/Components/ErrorView';
@@ -10,6 +10,8 @@ import { message } from 'antd';
 import Linq from 'linq'
 import { numberPlayCountFormat } from '@/utils/format';
 import { PlayCircle } from '@mui/icons-material';
+import { getTopList, sourceDefKey } from '../MicModel/MicCategory';
+import HeaderSourceView from './HeaderSourceView';
 const Con = styled(FlexConScroll)`
   padding-top: 60px;
   padding-bottom: 70px;
@@ -61,14 +63,23 @@ const iconVolStyle = {fontSize:40,color:'#fff',":hover":{color:THEME.theme},curs
 const maxWidth = 160;
 const MicTopList = () => {
     const {micNavigate} =  useModel('global');
-    const [list, setList] = useState([])
-    const [topList, setTopList] = useState([])
-    const {run,loading, error} = useRequest(getTopList,{
+    const [sourceKey, setSourceKey] = useState(sourceDefKey)
+    const [list, setList] = useState<any>([])
+    const [topList, setTopList] = useState<any>([])
+    const {run,loading, error} = useRequest(getTopList(sourceKey),{
         manual:true,
         onSuccess:(res) => {
+            console.log('res::',res)
             if(res.status == 0){
-                const top4 = Linq.from(res.data.list).where((x:any) => ['飙升榜','新歌榜','原创榜','热歌榜'].indexOf(x.name)!= -1).toArray()
-                const listS = Linq.from(res.data.list).where((x:any) => ['飙升榜','新歌榜','原创榜','热歌榜'].indexOf(x.name)== -1).toArray()
+                const neteaseKey = ['飙升榜','新歌榜','原创榜','热歌榜'];
+                const qqKey = ['飙升榜','巅峰榜·新歌','巅峰榜·流行指数','巅峰榜·热歌'];
+                // let showKeys = 'netease';
+                let showKeys = neteaseKey;
+                if(sourceKey == 'qq'){
+                    showKeys = qqKey
+                }
+                const top4 = Linq.from(res.data).where((x:any) => showKeys.indexOf(x.name)!= -1).toArray()
+                const listS = Linq.from(res.data).where((x:any) => showKeys.indexOf(x.name)== -1).toArray()
                 setList(listS)
                 setTopList(top4)
             }else {
@@ -88,7 +99,7 @@ const MicTopList = () => {
       })
     useEffect(()  => {
         run()
-    },[])
+    },[sourceKey])
     useEffect(() => {
       resize()
       window?.ipc?.renderer?.on(window.WIN_TYPE.resized,(data:any) => {
@@ -142,9 +153,9 @@ const MicTopList = () => {
                 </FlexCenter>
                 <CellRC >
                     <FlexText style={ts0}>{item.name}</FlexText>
-                    {item.tracks.map((item:any,index:number) => {
+                    {item.songList.map((item:any,index:number) => {
                         return (
-                            <FlexRow key={item.first} style={{marginTop:10,alignItems:'center'}} >
+                            <FlexRow key={item.first + item.second + index} style={{marginTop:10,alignItems:'center'}} >
                                 <FlexText style={ts1}>{index+1} {item.first}</FlexText>
                                 <Flex/>
                                 <FlexText numberOfLine={1} style={ts2}>{item.second}</FlexText>
@@ -161,19 +172,22 @@ const MicTopList = () => {
             <TopListCell key={item.id} className='itemNameTop' onClick={() => onGoToDetail(item)}>
                 <FlexCenter style={{position:'relative'}}>
                     <FlexImage className='urlImgTop'  src={item.coverImgUrl}/>
-                    <FlexText style={{position:"absolute",top:6,right:6}}>{npcf.value + npcf.unit}</FlexText>
+                    <FlexText style={{position:"absolute",top:6,right:6,color:'#fff'}}>{npcf.value + npcf.unit}</FlexText>
                 </FlexCenter>
             </TopListCell>
         )
     }
     return (
         <Con>
-            <TopCon>
-                {topList.map((item:any) => topCellView(item))}
-            </TopCon>
-           <TopCon id='contentNameTop' style={{flex:1,width:'100%',paddingBottom:10}}>
-                {list.map((item:any) => otherCellView(item))}
-            </TopCon>
+            <HeaderSourceView sourceKey={sourceKey}  onSourceClick = {(key:string) => {setSourceKey(key)}}/>
+            {!loading?<>
+                <TopCon>
+                    {topList.map((item:any) => topCellView(item))}
+                </TopCon>
+                 <TopCon id='contentNameTop' style={{flex:1,width:'100%',paddingBottom:10}}>
+                    {list.map((item:any) => otherCellView(item))}
+                </TopCon>
+            </>:<LoadingView textStyle={{color:'#999'}}/>}
         </Con>
     )
     

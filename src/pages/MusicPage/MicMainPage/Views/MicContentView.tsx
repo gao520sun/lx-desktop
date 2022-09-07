@@ -1,4 +1,4 @@
-import { FlexColumn, FlexRow } from '@/globalStyle'
+import { FlexColumn, FlexRow, FlexText } from '@/globalStyle'
 import ErrorView from '@/pages/Components/ErrorView';
 import LoadingFooterView from '@/pages/Components/LoadingFooterView';
 import LoadingView from '@/pages/Components/LoadingView';
@@ -9,8 +9,15 @@ import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Linq from 'linq';
 import ConItemCell from './ConItemCell';
-import { classifiedSongList, classifiedSongDetail } from '@/services/netease';
+import { classifiedSongList, classifiedSongDetail, sourceDefKey, sourceList, getPlayListFilters } from '../../MicModel/MicCategory';
 import { message } from 'antd';
+import HeaderSourceView from './HeaderSourceView';
+const ConDiv = styled.div`
+ display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+`
 const Con = styled.div`
   display: flex;
   flex-direction: column;
@@ -36,24 +43,33 @@ const ContentView = styled(FlexRow)`
 let isDownLoading = false;
 let hasMore = true;
 const maxWidth = 240;
-const limit = 35;
+const limit = 29;
+const defFilter = {id:'',name:'全部'}
 const MicContentView = (props:any) => {
   const [list, setList] = useState([]);
-  const {run, loading} = useRequest(classifiedSongList,{
+  const [sourceKey, setSourceKey] = useState(sourceDefKey)
+  const [filter, setFilter] = useState(defFilter);
+  const [filtersData, setFiltersData] = useState({})
+  const {run, loading} = useRequest(classifiedSongList(sourceKey),{
     manual:true,
     onSuccess:(res:any,params:any) => {
+      if(res.status == 0){
         const par = params[0]
         let oldList:any = par?.offset == 0 ? [] : [...list];
-        const newList:any = oldList.concat(res||[]);
-        hasMore = res.length >= limit ? true : false;
+        const newList:any = oldList.concat(res.data||[]);
+        hasMore = res.data.length >= limit ? true : false;
         isDownLoading = false;
         setList(newList);
         setTimeout(() => {
             resize()
         }, 0);
+      }else {
+        message.error(res.message)
+      }
+       
     }
   })
-  const {run:detailRun} = useRequest(classifiedSongDetail,{
+  const {run:detailRun} = useRequest(classifiedSongDetail(sourceKey),{
     manual:true,
     onSuccess:(res:any,params:any) => {
      if(res.status == 0){
@@ -63,18 +79,29 @@ const MicContentView = (props:any) => {
      }
     }
   })
+  const {run:filtersRun} = useRequest(getPlayListFilters(sourceKey),{
+    manual:true,
+    onSuccess:(res:any) => {
+      if(res.status == 0){
+        setFiltersData(res.data)
+      }
+     }
+  })
   useEffect(() => {
-      isDownLoading = false;
-      hasMore = true;
-      run({offset:0,limit:limit,order:'hot'})
-    // 上下滑动
+    filtersRun();
+    isDownLoading = false;
+    hasMore = true;
+    run({offset:0,limit:limit,order:'hot',filterId:filter?.id || '10000000',cat:filter?.id})
+  },[sourceKey,filter.id])
+  useEffect(() => {
+    // 上下滑动 
     const doc = document.getElementById('cList');
     doc?.addEventListener('scroll',onScrollEvent);
     // 监听窗口变化
     resize()
     window?.ipc?.renderer?.on(window.WIN_TYPE.resized,(data:any) => {
         resize()
-    })
+    }) 
     return ()  => {
       doc?.removeEventListener('scroll',()=>{})
     }
@@ -114,29 +141,34 @@ const MicContentView = (props:any) => {
   },{wait:500})
   // 加载更多
   const onLoadMore = useCallback(() => {
-      run({offset:list.length,limit:limit,order:'hot'});
+      run({offset:list.length,limit:limit,order:'hot',filterId:'10000000',cat:filter?.id});
   },[list])
-  // 防抖刷选
-  const debounceFn  = useDebounceFn((cuType) => {
-      const params  =  {}
-      // run(params);
-  },{wait:100})
   // 播放歌单
   const onItemPlayClick = (item:any) => {
     detailRun(item.id)
   }
+  
   return (
-    <Con id={'cList'}>
-      <ContentView className='contentName' id={'contentName'}>
-          {!loading || list.length ? list.map((item:any, index:number) => {
-              return <FlexColumn className='itemName' style={{marginRight:14,marginBottom:10}} key={item.cover_url+item.title}>
-                          <ConItemCell value={item} navigate={props.navigate} onItemPlayClick={onItemPlayClick}/>
-                      </FlexColumn>
-          }):<LoadingView textStyle={{color:'#9999'}}/>}
-          {!loading || list.length ? <LoadingFooterView textStyle={{color:'#666'}} isMore={hasMore} isLoading={isDownLoading}/> : null}
-          {!loading && !list.length ? <ErrorView msg='暂无数据, 请选择其他类型'/>:null}
-      </ContentView>
-    </Con>
+    <ConDiv>
+      <HeaderSourceView filters={filtersData} 
+                sourceKey={sourceKey} 
+                filter={filter}  
+                onSourceClick = {(key:string) => {setSourceKey(key);setFilter(defFilter)}}
+                onFilterItem = {(value:any) => setFilter(value)}
+      />
+      <Con id={'cList'}>
+        <ContentView className='contentName' id={'contentName'}>
+            {!loading || list.length ? list.map((item:any, index:number) => {
+                return <FlexColumn className='itemName' style={{marginRight:14,marginBottom:10}} key={item.cover_url+item.title}>
+                            <ConItemCell value={item} sourceKey={sourceKey} navigate={props.navigate} onItemPlayClick={onItemPlayClick}/>
+                        </FlexColumn>
+            }):<LoadingView textStyle={{color:'#9999'}}/>}
+            {!loading || list.length ? <LoadingFooterView textStyle={{color:'#666'}} isMore={hasMore} isLoading={isDownLoading}/> : null}
+            {!loading && !list.length ? <ErrorView msg='暂无数据, 请选择其他类型'/>:null}
+        </ContentView>
+      </Con>
+    </ConDiv>
+    
   )
 }
 

@@ -1,5 +1,6 @@
 import { request } from "@umijs/max"
-const host = 'http://localhost:40001'
+// const host = 'http://localhost:40001'
+const host = 'http://39.100.108.105'
 export const getVodList = async (params={}) => {
     return request(host+'/video/vod/list',{method:'POST',data:params})
 }

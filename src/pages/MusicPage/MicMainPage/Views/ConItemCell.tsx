@@ -30,12 +30,12 @@ const iconVolStyle = {fontSize:40,color:'#fff',":hover":{color:THEME.theme},curs
 const ConItemCell = (props:any) => {
   const data = props.value;
   const {micNavigate} =  useModel('global');
-  const onItemPlayClick = (event) => {
+  const onItemPlayClick = (event:any) => {
     event && event.stopPropagation();
     typeof props.onItemPlayClick == 'function' &&  props.onItemPlayClick(data)
   }
   const onPlayDetailClick = useCallback(() => {
-    props.navigate?.push('MicClassifiedDetail',data)
+    props.navigate?.push('MicClassifiedDetail',{...data,source:props.sourceKey})
   },[props.navigate])
   return (
     <Con onClick={onPlayDetailClick}>

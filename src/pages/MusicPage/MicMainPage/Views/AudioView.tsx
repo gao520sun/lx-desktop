@@ -1,6 +1,6 @@
 import { FlexCenter, FlexColumn, FlexImage, FlexRow, FlexText, FlexWidth12 } from '@/globalStyle';
 import styled from 'styled-components'
-import React, { startTransition, useCallback, useEffect, useRef, useState } from 'react'
+import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactAudioPlayer from 'react-audio-player';
 import { KeyboardDoubleArrowDown, KeyboardDoubleArrowUp, PauseCircleFilledOutlined, PlayCircleFilledOutlined, Repeat, RepeatOne, Shuffle, SkipNext, SkipPrevious, VolumeOff, VolumeUp } from '@mui/icons-material';
 import THEME from '@/pages/Config/Theme';
@@ -12,8 +12,8 @@ import { useDebounceFn } from 'ahooks';
 import { formatTime } from '@/utils/VodDate';
 import { LoadingOutlined } from '@ant-design/icons';
 import PlayerMenuListView from './PlayerMenuListView';
-import { useRequest } from '@umijs/max';
-import { getLyric, playerUrl } from '@/services/netease';
+import { useRequest ,useModel } from '@umijs/max';
+import {playerUrl, getLyric, sourceList} from '../../MicModel/MicCategory'
 import LyricView from './LyricView';
 const Con = styled(FlexRow)`
     position: absolute;
@@ -99,29 +99,28 @@ const AudioView = () => {
     const [volume, setVolume] = useState(0.5);
     const [progress, setProgress] = useState(0);
     const [isLoadingPlay, setIsLoadingPlay] = useState(false); // 是否可以播放视频
-    const {run:playerRun} = useRequest(playerUrl,{
+    const {run:playerRun} = useRequest(playerUrl(currentUrlData.source),{
       manual:true,
       onSuccess:(res:any) => {
         if(res.status == 0){
           let dic:any = Linq.from(audioData).firstOrDefault((x:any) => x.id == res.data.id,{});
           dic = Object.assign(dic || {},res.data)
           setCurrentUrlData(dic);
-          lyricRun(dic.id)
         }else {
           isPlay && audioElRef.current.pause();
           setIsPlay(false)
           message.error(res.message);
-          setTimeout(() => {
-            message.error('自动播放下一首');
-            onNextPlay()
-          }, 2000);
+          // setTimeout(() => {
+          //   message.error('自动播放下一首');
+          //   onNextPlay()
+          // }, 2000);
         }
       },
       onError:() => {
         message.error('播放失败');
       }
     })
-    const {run:lyricRun} = useRequest(getLyric,{
+    const {run:lyricRun} = useRequest(getLyric(currentUrlData.source),{
       manual:true,
       onSuccess:((res:any) => {
         if(res.status == 0){
@@ -143,7 +142,7 @@ const AudioView = () => {
         setPlayerListHandle(data,'add')
       });
       // 单个播放->包含已存在和未存在
-      let token2:any = PubSub.subscribe(window.MIC_TYPE.oneSongPlay,(msg,value = []) =>{
+      let token2:any = PubSub.subscribe(window.MIC_TYPE.oneSongPlay,(msg,value:any = []) =>{
         // 已存在
         const songDic:any = Linq.from(audioData).firstOrDefault((x:any) => x.id == value.id);
         if(songDic){
@@ -155,6 +154,7 @@ const AudioView = () => {
         let index =  Linq.from(list).indexOf((x:any) => x.id == currentUrlData.id);
         index = index == -1 ? 0 : index;
         list.splice(index,0,value);
+        setPlayerListHandle(list,'add')
         playerRunHandle(value)
       });
       // 清空当前播放列表
@@ -193,14 +193,18 @@ const AudioView = () => {
         }
       },100)
     },[audioData])
+    useEffect(() => {
+      if(JSON.stringify(currentUrlData) == '{}'){return}
+      if(!currentUrlData.url){
+        playerRun(currentUrlData)
+      }
+      lyricRun(currentUrlData.id)
+      setIsPlay(true)
+      audioElRef.current.play();
+    },[currentUrlData.source,currentUrlData.url])
     // 播放器数据设置
     const playerRunHandle = useCallback((playDic:any) => {
       setCurrentUrlData(playDic);
-      if(!playDic.url){
-        playerRun(playDic)
-      }
-      setIsPlay(true)
-      audioElRef.current.play();
     },[audioData])
     // 播放或者暂停
     const onPlayAndPause = () => {
@@ -292,7 +296,8 @@ const AudioView = () => {
       setVolumeHovered(false);
     },{wait:3000})
     // 音频信息
-    const songInfoView = () => {
+    const songInfoView = useMemo(() => {
+      const cDic:any = Linq.from(sourceList).firstOrDefault((x:any)=>x.key == currentUrlData.source);
       return (
         <FlexRow style={{paddingLeft:28,flexShrink:0,width:318}}>
            {currentUrlData.artist_pic && <AlbumPicDiv style={{position:'relative'}}>
@@ -304,14 +309,14 @@ const AudioView = () => {
               <FlexText numberOfLine={1} style={{color:'#222',fontSize:14}}>{currentUrlData.name}</FlexText>
               {currentUrlData.name && <FlexRow>
                 <FlexText style={{color:'#999',fontSize:12}}>歌手：{currentUrlData.artist_name}</FlexText>
-                <FlexText style={{color:'#999',fontSize:12,marginLeft:15}}>{'来源：网易云'}</FlexText>
+                <FlexText style={{color:'#999',fontSize:12,marginLeft:15}}>{'来源：'+ cDic.title}</FlexText>
               </FlexRow>}
            </FlexColumn>
         </FlexRow>
       )
-    }
+    },[currentUrlData?.url])
     // 播放按钮 播放 暂停 等
-    const playerView = () => {
+    const playerView = useMemo(() => {
       return (
         <FlexRow style={{alignItems:'center',flex:1,justifyContent:'center'}}>
           <div  onClick={onPreviousPlay}><SkipPrevious sx={iconSkipStyle}/> </div>
@@ -325,7 +330,7 @@ const AudioView = () => {
           {repeatType == repeatKey ? <div onClick={() => onRepeatRandom(sequenceKey)}><RepeatOne sx={iconXHStyle}/></div> : null}
         </FlexRow>
       )
-    }
+    },[currentUrlData?.url,isPlay,isLoadingPlay,repeatType])
     // 音量
     const volumeContent= () => {
       return(
@@ -376,8 +381,8 @@ const AudioView = () => {
               // onCanPlayThrough={onCanPlayThrough}
           />
           <FlexRow style={{alignItems:"center",position:'relative',width:'100%'}}>
-            {songInfoView()}
-            {playerView()}
+            {songInfoView}
+            {playerView}
             {playerToolView()}
           </FlexRow>
           {sliderProgressView()}

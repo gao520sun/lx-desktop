@@ -47,6 +47,8 @@ export const FlexImage = styled(Image).attrs({
     border-radius: 5px;
 `
 export const FlexText:any =  styled(TextView)`
+    flex-shrink: 0;
+    width:'100%'
     color:${(props) => props.color || '#fff'};
     font-size: ${(props) => props.fontSize || '14px'};
 `
@@ -71,7 +73,7 @@ export const FlexConScroll = styled.div`
 
 export const FlexWidth:any = styled.div`
     flex-shrink: 0;
-    width: ${(props:any) => props.width || '10px'};
+    width: ${(props:any) => props.width ||'10px'};
 `
 export const FlexHeight:any = styled.div`
     flex-shrink: 0;

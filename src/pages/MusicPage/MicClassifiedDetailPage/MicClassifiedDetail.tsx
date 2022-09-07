@@ -1,25 +1,24 @@
 import { useRequest } from '@umijs/max'
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { classifiedSongDetail, getAlbumInfo, getArtistInfo } from '@/services/netease';
 import ErrorView from '@/pages/Components/ErrorView';
 import LoadingView from '@/pages/Components/LoadingView';
 import { Flex, FlexCenter, FlexColumn, FlexHeight10, FlexHeight12, FlexImage, FlexRow, FlexText, FlexWidth, FlexWidth10, FlexWidth12 } from '@/globalStyle';
 import { PlayArrow, Add, AddCard, PlayArrowRounded, FavoriteBorder, DeleteForever } from '@mui/icons-material';
 import THEME from '@/pages/Config/Theme';
-import { formatTime } from '@/utils/VodDate';
 import { message, Tooltip, Typography } from 'antd';
 import PubSub from 'pubsub-js'
-import CreateSongListModalView from '../MicMainPage/Views/CreateSongListModalView';
-import { deleteSingleSongList,deleteSingSong, getCollectSingleSongList, getCollectSongList, getSingleSongList, saveNetworkSongList } from '../MicMainPage/SongListModel';
+import { deleteSingleSongList, getCollectSingleSongList, getCollectSongList, getSingleSongList, saveNetworkSongList } from '../MicModel/SongListModel';
 import { useModel } from '@umijs/max';
+import SongListView from './SongListView'
+import {classifiedSongDetail, getAlbumInfo, getArtistInfo } from '../MicModel/MicCategory';
 const Con = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
   padding-top: 60px;
-  padding-bottom: 60px;
+  padding-bottom: 70px;
   overflow-y: scroll;
   background-color: #fff;
   &::-webkit-scrollbar{
@@ -31,41 +30,6 @@ const Con = styled.div`
       background-color: #a2a3a448;
   
   }
-`
-const SongContentDiv = styled(FlexColumn)`
-  padding: 12px;
-  padding-top: 0;
-`
-const SongTopDiv = styled(FlexRow)`
-  width:100%;
-  height:50px;
-  padding:0 12px;
-  background-color:#fff;
-  align-items: center;
- 
-`
-const SongItemDiv = styled(SongTopDiv)`
-  width:100%;
-  height:50px;
-  padding:0 12px;
-  background-color:#fff;
-  align-items: center;
-  &:hover{
-    background-color:#f0f0f0;
-  };
-`
-const SongItemToolDiv = styled(FlexRow)`
-  margin-right: 12px;
-  display: none;
-  ${SongItemDiv}:hover &{// ${SongItemDiv}:hover 必须连起来一起写  & 表示当前的组件
-    display: flex;
-  }
-`
-const CellText = styled(FlexText).attrs({
-  numberOfLine:1,
-})`
-  font-size:14px;
-  color:#333;
 `
 const PlayBtn = styled(FlexCenter)`
   margin-top: 10px;
@@ -111,25 +75,23 @@ const AddSongListBtn = styled(FlexCenter)`
 const iconStyle={color:'#999',fontSize:20,":hover":{color:THEME.theme},cursor: 'pointer'}
 interface IProps  {
   type?:string,// 网络还是自定义歌单
-  params?:any
+  params?:any,
+  sourceKey?:string
 }
 
 const MicClassifiedDetail = (props:IProps) => {
   const params = props.params;
-  // console.log('params::',params)
-  const {micNavigate} =  useModel('global');
-  const [showModal, setShowModal] = useState(false);
+  const {micNavigate, micSLSourceKey} =  useModel('global');
   const [updatePage, setUpdatePage] = useState(false);
-  const [saveSong, setSaveSong] = useState([]);
   const [list, setList] = useState([]);
   const [songInfo, setSongInfo] = useState<any>({});
   const getDataApi:any = () => {
     if(props.params.type == 'album'){
-      return getAlbumInfo;
+      return getAlbumInfo(params.source);
     }else if(props.params.type == 'artist'){
-      return getArtistInfo
+      return getArtistInfo(params.source)
     }
-    return classifiedSongDetail
+    return classifiedSongDetail( props.params.source)
   }
   const {run, loading,error} = useRequest(getDataApi(),{
     manual:true,
@@ -142,7 +104,6 @@ const MicClassifiedDetail = (props:IProps) => {
       }
     }
   })
-  
   useEffect(() => {
     if(props.params.type == 'custom'){
       const slDic = getSingleSongList(params.name);
@@ -173,22 +134,8 @@ const MicClassifiedDetail = (props:IProps) => {
     PubSub.publishSync(window.MIC_TYPE.addSongPlay,list);
     altMsg()
   }
-  // 单个播放
-  const onPlayClick = (item:any) => {
-    PubSub.publishSync(window.MIC_TYPE.oneSongPlay,item)
-  }
-  // 添加到当前播放列表
-  const onAddPlayerListClick = (item:any) => {
-    PubSub.publishSync(window.MIC_TYPE.addSongPlay,[item]);
-    altMsg();
-  }
   const altMsg = (msg?:string) => {
     message.success(msg || '添加至当前播放列表')
-  }
-  // 添加到歌单中
-  const onAddSongListClick = (item:any) => {
-    setSaveSong([item]);
-    setShowModal(true);
   }
   // 收藏歌单
   const onCollectSongList = () => {
@@ -205,16 +152,6 @@ const MicClassifiedDetail = (props:IProps) => {
     if(res.status == 0){
       message.success(res.message);
       micNavigate.pop();
-    }else {
-      message.error(res.message)
-    }
-  }
-  // 删除某个单曲歌单
-  const onDeleteSongClick = (item:any) => {
-    const res = deleteSingSong(songInfo.name,item);
-    if(res.status == 0){
-      message.success(res.message);
-      setUpdatePage(!updatePage)
     }else {
       message.error(res.message)
     }
@@ -267,66 +204,11 @@ const MicClassifiedDetail = (props:IProps) => {
       </FlexRow>
     )
   }
-  const songCellView = (item:any,index:number) => {
-    const isShowDelete = props.params.type == 'custom'? true : false;
-    const indexStr = index+1 >= 10 ? index+1 : '0' + (index+1)
-    return (
-      <SongItemDiv key={item.id}>
-        <FlexRow style={{width:'46%',flexShrink:0}}>
-          <CellText>{`${indexStr}. ${item.name}`}</CellText>
-          <Flex/>
-          <SongItemToolDiv>
-            <FlexCenter onClick={() => onPlayClick(item)}><PlayArrow sx={iconStyle}/></FlexCenter>
-            <FlexWidth/>
-            <FlexCenter onClick={() => onAddPlayerListClick(item)}><Add sx={iconStyle}/></FlexCenter>
-            <FlexWidth/>
-            <FlexCenter onClick={() => onAddSongListClick(item)}><AddCard sx={iconStyle}/></FlexCenter>
-            <FlexWidth/>
-            {isShowDelete ? <>
-              <FlexCenter onClick={() => onDeleteSongClick(item)}><DeleteForever sx={iconStyle}/></FlexCenter>
-              <FlexWidth/>
-            </> : null}
-          </SongItemToolDiv>
-        </FlexRow>
-        <FlexRow style={{width:'22%',flexShrink:0,paddingRight:10}}>
-          <CellText>{item.artist_name}</CellText>
-        </FlexRow>
-        <FlexRow style={{width:'22%',flexShrink:0,paddingRight:10}}>
-          <CellText>{item.album}</CellText>
-        </FlexRow>
-        <FlexRow style={{width:'10%',flexShrink:0}}>
-          <CellText>{formatTime(item.duration / 1000)}</CellText>
-        </FlexRow>
-      </SongItemDiv>
-    )
-  }
-  const songListView = () => {
-    return (
-      <SongContentDiv>
-        <SongTopDiv style={{height:30}}>
-          <FlexRow style={{width:'46%',flexShrink:0}}>
-            <FlexText style={{color:'#666'}}>歌曲({list.length})</FlexText>
-          </FlexRow>
-          <FlexRow style={{width:'22%',flexShrink:0,paddingRight:10}}>
-            <FlexText style={{color:'#666'}}>歌手</FlexText>
-          </FlexRow>
-          <FlexRow style={{width:'22%',flexShrink:0,paddingRight:10}}>
-            <FlexText style={{color:'#666'}}>专辑</FlexText>
-          </FlexRow>
-          <FlexRow style={{width:'10%',flexShrink:0}}>
-          <FlexText style={{color:'#666'}}>时长</FlexText>
-          </FlexRow>
-        </SongTopDiv>
-        {list?.map((item,index:number) => songCellView(item,index))}
-      </SongContentDiv>
-    )
-  }
   return (
     <Con>
       {headerView()}
-      {songListView()}
+      <SongListView list={list} songInfo={songInfo} params={props.params} onDeleteSongClick={() => setUpdatePage(!updatePage)}/>
       {!loading && !list.length ? <ErrorView textStyle={{color:'#333'}} msg='暂无数据'/>:null}
-      <CreateSongListModalView showModal = {showModal} saveData={saveSong} onCancel={() => setShowModal(false)}/>
     </Con>
   )
 }

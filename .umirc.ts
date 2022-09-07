@@ -34,22 +34,34 @@ export default defineConfig({
   alias: {
     '@': path.resolve(__dirname, '../src'),
   },
-  proxy: {
-    '/discover': {
-      'target': 'https://music.163.com',
-      'changeOrigin': true,
-    },
-    '/weapi': {
-      'target': 'https://music.163.com',
-      'changeOrigin': true,
-    },
-    '/api': {
-      'target': 'https://music.163.com',
-      'changeOrigin': true,
-    },
-    '/eapi': {
-      'target': 'https://interface3.music.163.com',
-      'changeOrigin': true,
-    },
-  },
+  // proxy: {
+  //   '/discover': {
+  //     'target': 'https://music.163.com',
+  //     'changeOrigin': true,
+  //   },
+  //   '/weapi': {
+  //     'target': 'https://music.163.com',
+  //     'changeOrigin': true,
+  //   },
+  //   '/api': {
+  //     'target': 'https://music.163.com',
+  //     'changeOrigin': true,
+  //   },
+  //   '/eapi': {
+  //     'target': 'https://interface3.music.163.com',
+  //     'changeOrigin': true,
+  //   },
+  //   '/cgi-bin': {
+  //     'target': 'https://u.y.qq.com',
+  //     'changeOrigin': true,
+  //   },
+  //   '/fcg-bin': {
+  //     'target': 'https://i.y.qq.com/qzone-music',
+  //     'changeOrigin': true,
+  //   },
+  //   // '/splcloud': {
+  //   //   'target': 'https://c.y.qq.com',
+  //   //   'changeOrigin': true,
+  //   // },
+  // },
 });

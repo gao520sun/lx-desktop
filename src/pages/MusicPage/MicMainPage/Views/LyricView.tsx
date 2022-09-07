@@ -51,7 +51,7 @@ const LyricView = (props:any) => {
         }
     },[showMessage])
     useEffect(() => {
-        if(!showMessage){return}
+        if(!showMessage ){return}
         const time = formatTime(props.progress);
         const dic:any = Linq.from(lyricHandle).firstOrDefault((x:string) => x.indexOf(time) != -1 ? true : false);
         const fraction = 0.5;
@@ -59,26 +59,29 @@ const LyricView = (props:any) => {
             const lyricDoc:any = document.getElementById('lyric') || {};
             Linq.from(lyricDoc.children).forEach((x:any) => {x.style.color = '#666';x.style.fontSize = '14px'})
             const childDoc:any = document.getElementById(dic) || {};
-            childDoc.style.color = THEME.theme;
-            childDoc.style.fontSize ='16px';
-            const childOffsetTop =  childDoc.offsetTop - childDoc.parentNode.offsetTop;
-            const centerHeight = lyricDoc.clientHeight * fraction;
-            const currentTextTop = childOffsetTop - lyricDoc.scrollTop;
-            if( currentTextTop > centerHeight){
-                lyricDoc.scrollTop += Math.ceil(currentTextTop - centerHeight);
+            if(childDoc && childDoc.style){
+                childDoc.style.color = THEME.theme;
+                childDoc.style.fontSize ='16px';
+                const childOffsetTop =  childDoc.offsetTop - childDoc.parentNode.offsetTop;
+                const centerHeight = lyricDoc.clientHeight * fraction;
+                const currentTextTop = childOffsetTop - lyricDoc.scrollTop;
+                if( currentTextTop > centerHeight){
+                    lyricDoc.scrollTop += Math.ceil(currentTextTop - centerHeight);
+                }
+                else if (currentTextTop <centerHeight && lyricDoc.scrollTop != 0) {
+                    lyricDoc.scrollTop -= Math.ceil(centerHeight - (currentTextTop));
+                }
             }
-            else if (currentTextTop <centerHeight && lyricDoc.scrollTop != 0) {
-                lyricDoc.scrollTop -= Math.ceil(centerHeight - (currentTextTop));
-            }
+            
         }
         return () => {
         }
     },[formatTime(props.progress),showMessage])
     const lyricHandle = useMemo(() => {
-        const lyric = data.lyric?.lrc?.lyric;
+        const lyric = data.lyric ||'';
         const lyricArr = lyric ? lyric.split('\n') : [];
         return lyricArr;
-    },[data.lyric?.lrc?.lyric])
+    },[data.lyric])
     // 点击专辑
     const onAlbumClick = () => {
         jumpData = 'album';
@@ -90,7 +93,7 @@ const LyricView = (props:any) => {
         setShowMessage(false);
     }
     const onExitedCallback = useCallback(() => {
-        console.log('退出完成1',jumpData)
+        console.log('退出完成1',jumpData,data)
         if(jumpData){
             micNavigate?.push('MicClassifiedDetail',{type:jumpData,...data})
         }
@@ -130,7 +133,7 @@ const LyricView = (props:any) => {
                 })}
             </ConLyricDiv>
         )
-    },[data.lyric?.lrc?.lyric])
+    },[data.lyric])
     return (
             <CssTran in={showMessage}
                 classNames="box"

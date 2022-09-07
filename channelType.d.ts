@@ -21,6 +21,7 @@
     createSongList:string,
     showLyric:string,
     dataLyric:string,
+    sourceKey:string,
   }
 
   declare global {
