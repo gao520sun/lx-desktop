@@ -13,6 +13,7 @@ export const STORE_TYPE = {
     vodHistory:'store:vod_history',
     micSongList:'store:mic_songList',
     collectSongList:'mic:collect_song_list',
+    playList:'mic:play_list',
 }
 export const MIC_TYPE = {
     songPlay:'mic:song_play',

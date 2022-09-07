@@ -15,6 +15,7 @@ import PlayerMenuListView from './PlayerMenuListView';
 import { useRequest ,useModel } from '@umijs/max';
 import {playerUrl, getLyric, sourceList} from '../../MicModel/MicCategory'
 import LyricView from './LyricView';
+import { getStoreItem, setStoreItem } from '@/utils/Storage';
 const Con = styled(FlexRow)`
     position: absolute;
     bottom: 0;
@@ -131,6 +132,10 @@ const AudioView = () => {
       })
     })
     useEffect(() => {
+      const pl = getStoreItem(window.STORE_TYPE.playList);
+      setPlayerListHandle(pl||[],'local');
+    },[])
+    useEffect(() => {
       // 立即播放->清空当前播放列表
       let token:any = PubSub.subscribe(window.MIC_TYPE.songPlay,(msg,data) =>{
         setPlayerListHandle(data,'play')
@@ -166,6 +171,8 @@ const AudioView = () => {
         setProgress(0)
         audioElRef.current.pause();
       });
+      // 保存在本地
+      setStoreItem(window.STORE_TYPE.playList,audioData)
       return () => {
         PubSub.unsubscribe(token)
         PubSub.unsubscribe(token1)
@@ -186,21 +193,26 @@ const AudioView = () => {
         const playDic = list[0];
         if(type == 'play'){ // 立即播放需要播放
           playerRunHandle(playDic)
+          setTimeout(() => {
+            playingHandle();
+          },1000)
         }else if(type == 'add'){
           if(!currentUrlData.url){
             playerRunHandle(playDic)
           }
+        }else if(type == 'local'){
+          if(!currentUrlData.url){
+            playerRunHandle(playDic)
+          }
         }
-      },100)
+      },10)
     },[audioData])
     useEffect(() => {
       if(JSON.stringify(currentUrlData) == '{}'){return}
-      if(!currentUrlData.url){
-        playerRun(currentUrlData)
-      }
+      if(!currentUrlData.url){playerRun(currentUrlData)}
       lyricRun(currentUrlData.id)
-      setIsPlay(true)
-      audioElRef.current.play();
+      // setIsPlay(true)
+      // audioElRef.current.play();
     },[currentUrlData.source,currentUrlData.url])
     // 播放器数据设置
     const playerRunHandle = useCallback((playDic:any) => {
@@ -215,6 +227,10 @@ const AudioView = () => {
         audioElRef.current.play();
       }
       setIsPlay(!isPlay)
+    }
+    const playingHandle = () => {
+      setIsPlay(true)
+      audioElRef.current.play();
     }
     // 上一首
     const onPreviousPlay = () => {

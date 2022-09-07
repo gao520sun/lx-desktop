@@ -55,7 +55,7 @@ const MicToolView = () => {
     setCollectSongList(cList)
   }
   const onClassifiedDetailClick = (item:any,type:string='') => {
-    micNavigate?.push('MicClassifiedDetail',{type:type,name:item.info?.name})
+    micNavigate?.push('MicClassifiedDetail',{type:type,...item.info})
   }
   const platformSongListView = () => {
     return (
@@ -83,7 +83,7 @@ const MicToolView = () => {
         {songList.map((item:any) => {
           return (
             <CellView key={item.info?.name} onClick={()=>onClassifiedDetailClick(item,'custom')}>
-                <FlexText numberOfLine={1} color={'#333'}>{item.info?.name}</FlexText>
+                <FlexText numberOfLine={1} color={'#333'} style={{width:'100%'}}>{item.info?.name}</FlexText>
             </CellView>
           )
         })}
@@ -99,7 +99,7 @@ const MicToolView = () => {
         {collectSongList.map((item:any) => {
           return (
             <CellView key={item.info?.name} onClick={()=>onClassifiedDetailClick(item,'collect')}>
-                <FlexText numberOfLine={1} color={'#333'}>{item.info?.name}</FlexText>
+                <FlexText numberOfLine={1} color={'#333'} style={{width:'100%'}}>{item.info?.name}</FlexText>
             </CellView>
           )
         })}

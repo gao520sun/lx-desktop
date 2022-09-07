@@ -13,7 +13,7 @@ const ElectronStore = new Store(option);
 console.log('本地存储路径::',ElectronStore.path)
 let mainWin = null
 let initBrowser = {
-    width:1200,
+    width:1400,
     height:800,
     minWidth:1064,
     minHeight: 664,

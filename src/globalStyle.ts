@@ -48,7 +48,6 @@ export const FlexImage = styled(Image).attrs({
 `
 export const FlexText:any =  styled(TextView)`
     flex-shrink: 0;
-    width:'100%'
     color:${(props) => props.color || '#fff'};
     font-size: ${(props) => props.fontSize || '14px'};
 `

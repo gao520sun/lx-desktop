@@ -12,6 +12,8 @@ import { deleteSingleSongList, getCollectSingleSongList, getCollectSongList, get
 import { useModel } from '@umijs/max';
 import SongListView from './SongListView'
 import {classifiedSongDetail, getAlbumInfo, getArtistInfo } from '../MicModel/MicCategory';
+import { EditFilled } from '@ant-design/icons';
+import EditSongListModalView from '../MicMainPage/Views/EditSongListModalView';
 const Con = styled.div`
   display: flex;
   flex-direction: column;
@@ -82,6 +84,7 @@ interface IProps  {
 const MicClassifiedDetail = (props:IProps) => {
   const params = props.params;
   const {micNavigate, micSLSourceKey} =  useModel('global');
+  const [editShowModal, setEditShowModal] = useState(false);
   const [updatePage, setUpdatePage] = useState(false);
   const [list, setList] = useState([]);
   const [songInfo, setSongInfo] = useState<any>({});
@@ -106,11 +109,11 @@ const MicClassifiedDetail = (props:IProps) => {
   })
   useEffect(() => {
     if(props.params.type == 'custom'){
-      const slDic = getSingleSongList(params.name);
+      const slDic = getSingleSongList(params.id);
       slDic && setList(slDic.list);
       slDic && setSongInfo(slDic.info)
     }else if(props.params.type == 'collect'){
-      const slDic = getCollectSingleSongList(params.name);
+      const slDic = getCollectSingleSongList(params.id);
       slDic && setList(slDic.list);
       slDic && setSongInfo(slDic.info)
     }else if(props.params.type == 'album'){
@@ -156,6 +159,10 @@ const MicClassifiedDetail = (props:IProps) => {
       message.error(res.message)
     }
   }
+  // 编辑
+  const onEditSongList = () => {
+    setEditShowModal(true)
+  }
   if(loading){
     return <LoadingView textStyle={{color:'#99999970'}}/>
   }
@@ -199,6 +206,10 @@ const MicClassifiedDetail = (props:IProps) => {
                 <DeleteForever sx={{fontSize:20,color:'#222'}}/>
                 <div style={{marginLeft:5}}>删除收藏歌单</div>
             </DeleteBtn> : null}
+            {isShowDelete ? <DeleteBtn onClick={onEditSongList}>
+                <EditFilled sx={{fontSize:20,color:'#222'}}/>
+                <div style={{marginLeft:5}}>编辑歌单</div>
+            </DeleteBtn> : null}
          </FlexRow>
         </FlexColumn>
       </FlexRow>
@@ -209,6 +220,10 @@ const MicClassifiedDetail = (props:IProps) => {
       {headerView()}
       <SongListView list={list} songInfo={songInfo} params={props.params} onDeleteSongClick={() => setUpdatePage(!updatePage)}/>
       {!loading && !list.length ? <ErrorView textStyle={{color:'#333'}} msg='暂无数据'/>:null}
+      <EditSongListModalView showModal={editShowModal}  songInfo={songInfo} onCancel={() => {
+        setEditShowModal(false)
+        setUpdatePage(!updatePage)
+      }}/>
     </Con>
   )
 }

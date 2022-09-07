@@ -12,6 +12,7 @@
     vodHistory:string,
     micSongList:string,
     collectSongList:string,
+    playList:string,
   }
   export interface IMicType {
     songPlay:string,

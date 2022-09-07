@@ -1,3 +1,4 @@
+import { uuid } from "@/utils/format";
 import { getStoreItem, setStoreItem } from "@/utils/Storage"
 import Linq from 'linq';
 import PubSub from 'pubsub-js'
@@ -24,7 +25,7 @@ export const createSongList = (info:any={},list=[])  => {
         let songList = getSongList();
         const sDic = Linq.from(songList).firstOrDefault((x:any) => x.info.name == info.name,null);
         if(!sDic){
-            songList.push({info:{name:info.name,coverImgUrl:'',creator:{avatarUrl:'',nickname:''},tags:[],description:''},list});
+            songList.push({info:{name:info.name,coverImgUrl:'',avatarUrl:'',nickname:'',id:uuid(),tags:[],description:''},list});
             setStoreItem(window.STORE_TYPE.micSongList,songList);
             PubSub.publishSync(window.MIC_TYPE.createSongList,songList)
             return {status:0,message:'本地保存成功'}
@@ -63,15 +64,15 @@ export const saveNetworkSongList = (info:any,list=[]) => {
     return {status:-1,message:'当前歌单已收藏'}
 }
 // 获取当前单个歌单
-export const getSingleSongList = (name:string) => {
+export const getSingleSongList = (id:any) => {
     let songList = getSongList();
-    let sDic:any = Linq.from(songList).firstOrDefault((x:any) => x.info.name == name,null);
+    let sDic:any = Linq.from(songList).firstOrDefault((x:any) => x.info.id == id,null);
     return sDic;
 }
 // 获取当前收藏单个歌单
-export const getCollectSingleSongList = (name:string) => {
+export const getCollectSingleSongList = (id:any) => {
     let songList = getCollectSongList();
-    let sDic:any = Linq.from(songList).firstOrDefault((x:any) => x.info.name == name,null);
+    let sDic:any = Linq.from(songList).firstOrDefault((x:any) => x.info.id == id,null);
     return sDic;
 }
 // 删除当前收藏单个歌单

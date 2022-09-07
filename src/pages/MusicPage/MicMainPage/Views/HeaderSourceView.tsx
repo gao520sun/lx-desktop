@@ -42,8 +42,8 @@ const HeaderSourceView = (props:any) => {
                 <FlexRow style={{flexWrap:'wrap'}}>
                   {item.filters.map((fItem:any)=>{
                     return (
-                      <FlexRow key={fItem.key} onClick={() =>onFilterItem(fItem)}>
-                        <FlexText key={fItem.key} fontSize='14px' style={{cursor:'pointer',marginLeft:20,marginBottom:16,color:props.filter.name == fItem.name ? THEME.theme:'#666'}}>{fItem.name}</FlexText>
+                      <FlexRow key={fItem.name} onClick={() =>onFilterItem(fItem)}>
+                        <FlexText  fontSize='14px' style={{cursor:'pointer',marginLeft:20,marginBottom:16,color:props.filter.name == fItem.name ? THEME.theme:'#666'}}>{fItem.name}</FlexText>
                       </FlexRow>
                     )
                   })}

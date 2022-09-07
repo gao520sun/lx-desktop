@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { deleteSingSong } from '../MicModel/SongListModel'
 import CreateSongListModalView from '../MicMainPage/Views/CreateSongListModalView';
 import { useModel } from '@umijs/max'
+import EditSongListModalView from '../MicMainPage/Views/EditSongListModalView'
 const SongContentDiv = styled(FlexColumn)`
   padding: 12px;
   padding-top: 0;

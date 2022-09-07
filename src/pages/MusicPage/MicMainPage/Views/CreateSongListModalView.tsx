@@ -1,4 +1,5 @@
 import { FlexColumn, FlexImage, FlexText, FlexRow, FlexWidth12, FlexHeight12, FlexHeight, Flex } from '@/globalStyle'
+import { uuid } from '@/utils/format'
 import { Button, Input, message, Modal } from 'antd'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
@@ -40,7 +41,7 @@ const CreateSongListModalView = (props:any) => {
     setSongList(list)
   },[props.showModal])
   const onNewSongOkClick = () => {
-    const res = createSongList({name:inputValue},props.saveData);
+    const res = createSongList({name:inputValue,id:uuid()},props.saveData);
     if(res.status !=0){message.error(res.message);return};
     message.success('已添加至歌单中')
     typeof props.onCancel == 'function' && props.onCancel()
