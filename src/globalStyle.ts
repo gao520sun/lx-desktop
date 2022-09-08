@@ -1,7 +1,13 @@
-import { Image } from 'antd'
-import styled,{ createGlobalStyle } from 'styled-components'
+import { Image, ImageProps } from 'antd'
+import styled,{ createGlobalStyle, StyledInterface } from 'styled-components'
 import TextView from './pages/Components/TextView'
 import i01 from '@/assets/01.png';
+interface IHeightProps {
+    height?: string;
+};
+interface IWidthProps {
+    width?: string;
+};
 export const GlobalStyle = createGlobalStyle`
     flexRow {
         display: flex;
@@ -70,13 +76,13 @@ export const FlexConScroll = styled.div`
   }
 `
 
-export const FlexWidth:any = styled.div`
+export const FlexWidth:any = styled.div<IWidthProps>`
     flex-shrink: 0;
     width: ${(props:any) => props.width ||'10px'};
 `
-export const FlexHeight:any = styled.div`
+export const FlexHeight = styled.div<IHeightProps>`
     flex-shrink: 0;
-    height: ${(props:any) => props.height || '10px'};
+    height: ${(props:{height?:string}) => props.height || '10px'};
 `
 export const FlexWidth10 = styled(FlexWidth)``
 

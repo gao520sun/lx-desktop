@@ -119,11 +119,13 @@ export const getArtistInfo = async (artist_id:any) => {
 interface ISearch {
   offset:number,
   keywords:string,
-  type?:number
+  type?:number,
+  limit?:number,
+  searchType?:number,
 }
 // type=1 单曲, type=10 专辑, type=100 歌手, type=1000 歌单, type=1002 用户, type=1004 MV, type=1006 歌词, ype=1009 主播电台,
-export const getSearchInfo = async (params:ISearch = {type:1000, offset:0, keywords:''}) => {
-    const req_data = {s: params.keywords,offset: params.offset,limit: 20,type: params.type,csrf_token:'hlpretag=',hlposttag:'',};
+export const getSearchInfo = async (params:ISearch = {type:1000, offset:0, keywords:'',limit:20}) => {
+    const req_data = {s: params.keywords,offset: params.offset,limit: params.limit,type: params.type,csrf_token:'hlpretag=',hlposttag:'',};
     let url = 'https://music.163.com/api/search/get/web'
     // let urll = 'api/search/get/web?csrf_token=hlpretag=&hlposttag=&s=周杰伦&type=1&offset=0&total=true&limit=20'
     const res = await request(url,{method:'GET',params:req_data})

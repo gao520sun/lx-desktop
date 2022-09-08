@@ -4,6 +4,7 @@ export const VOD_TYPE = {
     detail:'vod:detail',
     fullScreen: 'vod:fullScreen',
     js:'vod:js',
+    homeList:'vod:home_list',
 }
 export const WIN_TYPE = {
     fullScreen: 'win:fullScreen',

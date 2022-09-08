@@ -241,6 +241,31 @@ export const getPlayListFilters = async () => {
     return responseError('未获取数据')
   }
 }
+export const getSearchInfo = async (params:any) => {
+  const target_url = 'https://u.y.qq.com/cgi-bin/musicu.fcg';
+  const searchTypeMapping:any = {0: 0,1: 3,};
+  const limit = params.limit || 20;
+  const query = {
+    comm: {ct: '19',cv: '1859',uin: '0',},
+    req: {
+      method: 'DoSearchForQQMusicDesktop',
+      module: 'music.search.SearchCgiService',
+      param: {grp: 1,num_per_page: limit,page_num: parseInt(params.offset / limit + 1, 10),query: params.keywords,search_type: searchTypeMapping[params.searchType],},
+    },
+  };
+  const res = await request(target_url,{method:'POST',data:query});
+  
+  const tracks =  res.req?.data?.body?.song?.list.map((data: any) => {
+    const sourceUrl = `https://y.qq.com/#type=song&mid=${data.mid}&tpl=yqq_song_detail`
+    return fixedSongInformation({...data,sourceUrl})
+  });
+  console.log('res',tracks)
+  if(res && tracks){
+    return responseSuccess({total:0,songs:tracks})
+  }
+  return responseError('服务异常，请稍后重试');
+  
+}
 // 名字可能带html
 function htmlDecode(value:any) {
     const parser = new DOMParser();
@@ -335,5 +360,6 @@ function getImageUrl(qqimgid:string, img_type:string) {
     getTopList,
     getAlbumInfo,
     getArtistInfo,
-    getPlayListFilters
+    getPlayListFilters,
+    getSearchInfo
   }

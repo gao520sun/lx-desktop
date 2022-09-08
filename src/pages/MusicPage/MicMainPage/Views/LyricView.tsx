@@ -105,7 +105,7 @@ const LyricView = (props:any) => {
                 <FlexWidth width='90px'/>
                 <FlexColumn>
                     <FlexText style={{fontSize:20,color:'#333'}}>{data.name}</FlexText>
-                    <FlexHeight/>
+                    <FlexHeight height='10px'/>
                     <FlexRow style={{borderBottom:'1px solid #f0f0f0',paddingBottom:10}}>
                         <FlexText style={{fontSize:14,color:'#999'}}>歌手：</FlexText>
                         <FlexCenter onClick={onArtistClick} style={{cursor:'pointer'}}><FlexText style={{fontSize:14,color:'#333'}} >{data.artist_name}</FlexText></FlexCenter>

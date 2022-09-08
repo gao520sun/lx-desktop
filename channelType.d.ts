@@ -7,6 +7,7 @@
     detail:string,
     fullScreen:string,
     js:string,
+    homeList:string,
   }
   export interface IStoreType {
     vodHistory:string,

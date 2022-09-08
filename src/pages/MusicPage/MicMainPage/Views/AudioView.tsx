@@ -193,9 +193,7 @@ const AudioView = () => {
         const playDic = list[0];
         if(type == 'play'){ // 立即播放需要播放
           playerRunHandle(playDic)
-          setTimeout(() => {
-            playingHandle();
-          },1000)
+          playingHandle();
         }else if(type == 'add'){
           if(!currentUrlData.url){
             playerRunHandle(playDic)
@@ -211,9 +209,10 @@ const AudioView = () => {
       if(JSON.stringify(currentUrlData) == '{}'){return}
       if(!currentUrlData.url){playerRun(currentUrlData)}
       lyricRun(currentUrlData.id)
+      setProgress(0)
       // setIsPlay(true)
       // audioElRef.current.play();
-    },[currentUrlData.source,currentUrlData.url])
+    },[currentUrlData.source,currentUrlData.id])
     // 播放器数据设置
     const playerRunHandle = useCallback((playDic:any) => {
       setCurrentUrlData(playDic);
@@ -229,8 +228,10 @@ const AudioView = () => {
       setIsPlay(!isPlay)
     }
     const playingHandle = () => {
-      setIsPlay(true)
-      audioElRef.current.play();
+      setTimeout(() => {
+        setIsPlay(true)
+        audioElRef.current.play();
+      },500)
     }
     // 上一首
     const onPreviousPlay = () => {
@@ -240,6 +241,7 @@ const AudioView = () => {
       indexUrl = indexUrl == 0 ? list.length : indexUrl
       const audioDic:any = audioData[indexUrl - 1];
       playerRunHandle(audioDic)
+      playingHandle()
     }
     // 下一首
     const onNextPlay = () => {
@@ -254,6 +256,7 @@ const AudioView = () => {
     const onCanPlay = (event:any) => {
       console.log('onCanPlay->event::',event);
       setIsLoadingPlay(false)
+      playingHandle()
     }
     // 切换原
     const onAbort = () => {

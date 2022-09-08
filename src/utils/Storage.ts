@@ -10,7 +10,7 @@ export const getStoreItem = (key:string) => {
 }
 
 export const removeStoreItem = (key:string) => {
-    return window.ipc.store.getItem(key)
+    return window.ipc.store.removeItem(key)
 }
 export const clearStore = () => {
     return window.ipc.store.clear()

@@ -98,6 +98,14 @@ export const getPlayListFilters =  (micSLSourceKey:string = sourceDefKey) => {
   }
   return new Promise((res,ref) => {res(statusHandle)})
 }
+export const getSearchInfo =  (micSLSourceKey:string = sourceDefKey) => {
+  if(micSLSourceKey == 'netease'){
+    return netease.getSearchInfo;
+  }else if(micSLSourceKey == 'qq'){
+    return qq.getSearchInfo;
+  }
+  return new Promise((res,ref) => {res(statusHandle)})
+}
 
 
 const statusHandle = {
